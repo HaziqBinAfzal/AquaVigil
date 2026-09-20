@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil logo" width="150">
+
 # AquaVigil
 
 ### Smart Water & Desalination Infrastructure Security Platform
