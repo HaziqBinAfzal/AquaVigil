@@ -65,18 +65,113 @@ AquaVigil's workspace is organized around the operational workflow:
 
 The repository includes the AquaVigil visual assets and complete responsive web interface.
 
-## Quick start
+## Installation and running AquaVigil
 
-### Windows one-click — recommended
+AquaVigil is designed to run locally on your computer. **Windows 10/11 with Docker Desktop is the recommended setup.** You do not need to install AquaVigil into a special system directory.
 
-1. Clone or download the repository.
-2. Make sure Docker Desktop is installed and running.
-3. Double-click `OPEN-AQUAVIGIL.vbs`.
-4. AquaVigil starts its services, waits for health checks, and opens the application in your browser.
+### 1. Prerequisites
 
-Use `START-AQUAVIGIL.cmd` when you want visible startup diagnostics. Use `STOP-AQUAVIGIL.cmd` to stop the stack.
+Before installing AquaVigil, install:
 
-### Docker / PowerShell
+- **Docker Desktop** — required for the recommended full-stack deployment.
+- **Git** — only required if you want to clone the repository instead of downloading the ZIP.
+- A modern web browser such as Microsoft Edge, Chrome, or Firefox.
+
+For the full Docker deployment, Python does **not** need to be installed separately.
+
+### 2. Where to install AquaVigil
+
+Choose a normal user-writable folder. Recommended examples:
+
+```text
+C:\Users\<your-user>\Documents\AquaVigil
+```
+
+or:
+
+```text
+C:\Users\<your-user>\Downloads\AquaVigil
+```
+
+> [!IMPORTANT]
+> If you download AquaVigil as a ZIP file, **extract the ZIP completely before running it**. Do not launch `OPEN-AQUAVIGIL.vbs`, `START-AQUAVIGIL.cmd`, or `start-aquavigil.ps1` from inside the compressed ZIP preview or a temporary extraction window.
+
+### 3. Download AquaVigil
+
+#### Option A — Download the release ZIP
+
+1. Open the GitHub **Releases** page.
+2. Select **AquaVigil v1.0.0**.
+3. Download **Source code (zip)**.
+4. Right-click the downloaded ZIP and choose **Extract All**.
+5. Open the extracted AquaVigil folder.
+
+#### Option B — Clone with Git
+
+Open PowerShell in the folder where you want AquaVigil and run:
+
+```powershell
+git clone https://github.com/HaziqBinAfzal/AquaVigil.git
+cd AquaVigil
+```
+
+### 4. Start Docker Desktop
+
+Open Docker Desktop and wait until the Docker engine reports that it is running.
+
+AquaVigil uses three local services:
+
+| Service | Address | Purpose |
+|---|---|---|
+| AquaVigil | `http://localhost:8000` | Main application |
+| Grafana | `http://localhost:3000` | Observability dashboard |
+| Prometheus | `http://localhost:9090` | Metrics and monitoring |
+
+Default Grafana credentials are `admin` / `aquavigil`.
+
+### 5. Run AquaVigil on Windows — recommended
+
+Inside the extracted or cloned AquaVigil folder, double-click:
+
+```text
+OPEN-AQUAVIGIL.vbs
+```
+
+The launcher prepares the environment, starts the Docker Compose stack, waits for AquaVigil to become healthy, and opens the application in your browser.
+
+If you want to see startup diagnostics instead, double-click:
+
+```text
+START-AQUAVIGIL.cmd
+```
+
+You can also start it directly from PowerShell:
+
+```powershell
+.\start-aquavigil.ps1
+```
+
+### 6. Verify the installation
+
+After startup, open:
+
+```text
+AquaVigil:  http://localhost:8000
+Grafana:    http://localhost:3000
+Prometheus: http://localhost:9090
+```
+
+For an additional Docker check, run:
+
+```powershell
+docker compose ps
+```
+
+The AquaVigil, Prometheus, and Grafana services should be running.
+
+### 7. Start manually with Docker Compose
+
+If you do not want to use the Windows launcher:
 
 ```powershell
 Copy-Item .env.example .env -ErrorAction SilentlyContinue
@@ -85,21 +180,47 @@ docker compose up --build -d
 docker compose ps
 ```
 
-| Service | Local address | Default access |
-|---|---|---|
-| AquaVigil | `http://localhost:8000` | No application login in this prototype |
-| Prometheus | `http://localhost:9090` | Local service |
-| Grafana | `http://localhost:3000` | `admin` / `aquavigil` |
+Then open `http://localhost:8000`.
 
-> [!NOTE]
-> The first Docker start may download Prometheus and Grafana images. Ports can be changed in `.env` using `APP_PORT`, `PROMETHEUS_PORT`, and `GRAFANA_PORT`.
+### 8. Stop AquaVigil
+
+On Windows, double-click:
+
+```text
+STOP-AQUAVIGIL.cmd
+```
+
+Or use:
+
+```powershell
+docker compose down
+```
 
 ### macOS / Linux
+
+Clone or extract AquaVigil, open a terminal in the project directory, and run:
 
 ```bash
 chmod +x start-aquavigil.sh stop-aquavigil.sh
 ./start-aquavigil.sh
 ```
+
+Stop the stack with:
+
+```bash
+./stop-aquavigil.sh
+```
+
+### Troubleshooting startup
+
+If AquaVigil does not start:
+
+1. Confirm Docker Desktop is running.
+2. Confirm the project was fully extracted from the ZIP.
+3. Run `START-AQUAVIGIL.cmd` instead of the silent launcher so the error remains visible.
+4. Check `docker compose ps`.
+5. Make sure ports `8000`, `3000`, and `9090` are not already occupied by another application or container.
+6. Review [Failure & Recovery](docs/FAILURE_RECOVERY.md) for additional recovery guidance.
 
 ## Local Python development
 
