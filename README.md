@@ -1,35 +1,80 @@
+<div align="center">
+
 # AquaVigil
 
-**Smart Water & Desalination Infrastructure Security Platform**
+### Smart Water & Desalination Infrastructure Security Platform
 
-AquaVigil is a defensive, read-only, evidence-driven platform for water-quality assurance, desalination insight, OT/SCADA security correlation, explainable optimization, asset monitoring, observability, and professional reporting.
+**Evidence-driven water intelligence • OT/SCADA protection • explainable analysis • observability**
 
-> **Safety boundary:** All included evidence is synthetic. AquaVigil must never be connected directly to a real utility, SCADA network, controller, pump, valve, dosing system, or safety function.
+[![Version](https://img.shields.io/badge/version-v1.0.0-0A66C2)](CHANGELOG.md)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](requirements.txt)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+[![CI](https://github.com/HaziqBinAfzal/AquaVigil/actions/workflows/ci.yml/badge.svg)](https://github.com/HaziqBinAfzal/AquaVigil/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## Working capabilities
+</div>
 
-- CSV, JSON, and JSON Lines evidence ingestion with SHA-256 provenance
-- Automatic evidence-type detection for water/process telemetry, Zeek-style connection logs, Suricata EVE events, and integrated files containing multiple evidence domains
-- Eight water/process signals: pH, conductivity, turbidity, chlorine, salinity, pressure, flow, and temperature
-- Deterministic operating-range checks plus a transparent recent-baseline anomaly model
-- Authorization, zone, connection, signature, and process-context correlation
-- Every finding explains observed evidence, expected condition, detection method, impact, source, and safe response
-- Fouling, specific-energy, and daily-demand decision support with visible calculation reasoning and operator guardrails
-- Standards evidence mapping for WHO water safety, EPA guidelines, national water-safety regulations, and NIST SP 800-82
-- Professional reports with print/PDF, HTML download, history, provenance, and delete controls
-- Prometheus telemetry and a provisioned 16-panel Grafana water-operations dashboard
-- Six downloadable synthetic sample datasets covering normal operation, dosing, quality, fouling, Zeek, and Suricata workflows
-- Responsive water-focused interface, automated tests, architecture, failure/recovery, and demonstration documentation
+> [!IMPORTANT]
+> **Safety boundary:** AquaVigil is a defensive, read-only educational prototype. All bundled evidence is synthetic. It must never be connected directly to a real utility, SCADA network, controller, pump, valve, dosing system, or safety function.
 
-## Windows one-click start — recommended
+## Overview
 
-Extract the ZIP, open the inner `aquavigil` folder, and double-click `OPEN-AQUAVIGIL.vbs`. It starts Docker Desktop when needed, clears the previous demonstration session, starts all services, waits for health, and opens AquaVigil in the browser. No terminal commands are required.
+AquaVigil brings water-quality assurance, desalination insight, OT/SCADA security correlation, asset monitoring, explainable decision support, observability, and professional reporting into one workstation. The workflow begins with evidence supplied by the user; AquaVigil validates and classifies that evidence, analyzes operational and security signals, correlates findings, and presents traceable results without issuing commands to operational technology.
 
-Use `START-AQUAVIGIL.cmd` only when you want visible startup progress or need to troubleshoot an error.
+## Platform workflow
 
-## Manual Docker start — fallback
+```mermaid
+flowchart LR
+    A[CSV / JSON / JSONL Evidence] --> B[Ingestion & SHA-256 Provenance]
+    B --> C[Evidence-Type Detection]
+    C --> D[Water & Process Analysis]
+    C --> E[OT / SCADA Security]
+    C --> F[Zeek / Suricata Evidence]
+    D --> G[Correlation & Explainable Findings]
+    E --> G
+    F --> G
+    G --> H[Water Quality & Desalination Views]
+    G --> I[Threat Center & Asset Health]
+    G --> J[Professional Reports]
+    G --> K[Prometheus Metrics]
+    K --> L[Grafana Dashboard]
+```
 
-Open PowerShell inside the extracted `aquavigil` folder:
+## Core capabilities
+
+| Domain | What AquaVigil demonstrates |
+|---|---|
+| **Evidence assurance** | CSV, JSON and JSONL ingestion, SHA-256 provenance, automatic evidence-type detection |
+| **Water intelligence** | pH, conductivity, turbidity, chlorine, salinity, pressure, flow and temperature analysis |
+| **Anomaly analysis** | Deterministic operating-range checks and a transparent recent-baseline anomaly model |
+| **OT / SCADA protection** | Authorization, zone, connection, signature and process-context correlation |
+| **Passive monitoring** | Zeek-style connection evidence and Suricata EVE-style security events |
+| **Desalination insight** | Fouling, specific-energy and daily-demand decision support with visible reasoning |
+| **Explainability** | Findings show observed evidence, expected condition, method, impact, source and safe response |
+| **Reporting** | Report history, provenance, print/PDF workflow, HTML export and controlled deletion |
+| **Observability** | Prometheus telemetry plus a provisioned Grafana water-operations dashboard |
+| **Standards evidence** | Mapping to WHO water-safety concepts, EPA guidance, national water-safety requirements and NIST SP 800-82 |
+
+## Interface
+
+AquaVigil's workspace is organized around the operational workflow:
+
+**Overview → Analyze Evidence → Water Quality → Desalination → Asset Health → OT / SCADA Security → Threat Center → Zeek / Suricata → Reports**
+
+The repository includes the AquaVigil visual assets and complete responsive web interface. Project screenshots can be added under `docs/screenshots/` to create a visual gallery without changing the application itself.
+
+## Quick start
+
+### Windows one-click — recommended
+
+1. Clone or download the repository.
+2. Make sure Docker Desktop is installed and running.
+3. Double-click `OPEN-AQUAVIGIL.vbs`.
+4. AquaVigil starts its services, waits for health checks, and opens the application in your browser.
+
+Use `START-AQUAVIGIL.cmd` when you want visible startup diagnostics. Use `STOP-AQUAVIGIL.cmd` to stop the stack.
+
+### Docker / PowerShell
 
 ```powershell
 Copy-Item .env.example .env -ErrorAction SilentlyContinue
@@ -38,29 +83,21 @@ docker compose up --build -d
 docker compose ps
 ```
 
-Open these services:
-
-| Service | URL | Credentials |
+| Service | Local address | Default access |
 |---|---|---|
-| AquaVigil | <http://localhost:8000> | none |
-| Prometheus | <http://localhost:9090> | none |
-| Grafana | <http://localhost:3000> | `admin` / `aquavigil` |
+| AquaVigil | `http://localhost:8000` | No application login in this prototype |
+| Prometheus | `http://localhost:9090` | Local service |
+| Grafana | `http://localhost:3000` | `admin` / `aquavigil` |
 
-To watch the application logs or stop the stack:
+> [!NOTE]
+> The first Docker start may download Prometheus and Grafana images. Ports can be changed in `.env` using `APP_PORT`, `PROMETHEUS_PORT`, and `GRAFANA_PORT`.
 
-```powershell
-docker compose logs -f aquavigil
-docker compose down
+### macOS / Linux
+
+```bash
+chmod +x start-aquavigil.sh stop-aquavigil.sh
+./start-aquavigil.sh
 ```
-
-The first start downloads Prometheus and Grafana, so Docker Desktop must be running and internet access must be available.
-
-## Other launchers
-
-- Windows diagnostics: double-click `START-AQUAVIGIL.cmd`; use `STOP-AQUAVIGIL.cmd` to stop.
-- macOS/Linux: run `chmod +x start-aquavigil.sh stop-aquavigil.sh`, then `./start-aquavigil.sh`.
-
-Ports can be changed in `.env` with `APP_PORT`, `PROMETHEUS_PORT`, and `GRAFANA_PORT`.
 
 ## Local Python development
 
@@ -73,44 +110,88 @@ pytest -q
 python run.py
 ```
 
-Open <http://localhost:5000>. This route runs the web application only; it does not start Prometheus or Grafana.
+The local Python route runs the web application at `http://localhost:5000`; it does not start Prometheus or Grafana.
 
-## Sample evidence
+## Synthetic evidence library
 
-All sample files are in `data/` and are also downloadable from **Analyze Evidence**:
+Bundled demonstration files live in `data/` and can also be accessed from **Analyze Evidence**:
 
-- `normal_operation.csv`
-- `unexpected_dosing_incident.csv`
-- `quality_excursion.csv`
-- `membrane_fouling.csv`
-- `zeek_network_evidence.csv`
-- `suricata_alerts.json`
+- `normal_operation.csv` — baseline operating evidence
+- `unexpected_dosing_incident.csv` — dosing-related process scenario
+- `quality_excursion.csv` — water-quality excursion
+- `membrane_fouling.csv` — desalination/membrane scenario
+- `zeek_network_evidence.csv` — passive network evidence
+- `suricata_alerts.json` — IDS-style event evidence
 
-## Repository map
+All bundled scenarios are synthetic and are intended for safe demonstration and testing.
+
+## Repository structure
 
 ```text
-app/                 Flask routes, analysis engine, database, templates, UI, and metrics
-data/                Synthetic water, process, Zeek-style, and Suricata evidence
-docker/              Prometheus and Grafana configuration and dashboard provisioning
-docs/                Architecture, requirement mapping, security, recovery, and demo guide
-tests/               Analyzer, integration, route, report, and lifecycle tests
-Dockerfile           Application image
-docker-compose.yml   AquaVigil + Prometheus + Grafana
+.github/             CI and dependency-update automation
+app/                 Flask application, analysis engine, templates, UI and metrics
+data/                Synthetic process, water, Zeek-style and Suricata evidence
+docker/              Prometheus and Grafana configuration
+docs/                Architecture, security, recovery, requirements and demo guidance
+scripts/             Setup/support scripts
+tests/               Analyzer and application tests
+Dockerfile           AquaVigil application image
+docker-compose.yml   AquaVigil + Prometheus + Grafana stack
 ```
 
-## Demonstration sequence
+## Documentation
 
-1. Open the landing page and explain the read-only safety boundary.
-2. Download or upload a synthetic evidence sample.
-3. Show automatic multi-domain evidence detection, sensor/network observations, and explainable findings.
-4. Review constrained optimization and asset-health reasoning.
-5. Open the professional report and standards evidence mapping.
-6. Print/save PDF, download HTML, and demonstrate controlled report deletion.
-7. Open Prometheus and the provisioned Grafana dashboard to show updated metrics.
-8. Explain segmentation, the industrial DMZ, passive monitoring, and recovery controls.
+| Document | Purpose |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | System structure and data flow |
+| [Demonstration Guide](docs/DEMONSTRATION_GUIDE.md) | Guided project demonstration |
+| [Requirement Matrix](docs/REQUIREMENT_MATRIX.md) | Requirement-to-evidence mapping |
+| [Security](docs/SECURITY.md) | Defensive boundaries and security considerations |
+| [Failure & Recovery](docs/FAILURE_RECOVERY.md) | Recovery and troubleshooting guidance |
+| [Changelog](CHANGELOG.md) | Version history |
 
-See [docs/DEMONSTRATION_GUIDE.md](docs/DEMONSTRATION_GUIDE.md) and [docs/REQUIREMENT_MATRIX.md](docs/REQUIREMENT_MATRIX.md).
+## Demonstration path
 
-## Important limitations
+1. Start with the safety boundary and architecture.
+2. Upload one of the synthetic evidence samples.
+3. Review evidence detection, provenance and sensor/network observations.
+4. Inspect explainable findings across water/process and security contexts.
+5. Review desalination decision support and asset-health reasoning.
+6. Generate the professional report and inspect standards evidence mapping.
+7. Open Prometheus and Grafana to demonstrate observability.
+8. Discuss passive monitoring, segmentation, the industrial DMZ and recovery controls.
 
-AquaVigil is an educational defensive prototype. Its results are not laboratory certification, engineering approval, legal advice, or formal regulatory certification. Real-world use requires authorization, secure deployment, authenticated access, independent water-quality verification, validated engineering limits, and qualified operators.
+## Testing and automation
+
+Run the automated tests with:
+
+```bash
+pytest -q
+```
+
+GitHub Actions provides repository CI, while Dependabot tracks supported dependency updates. Docker configuration keeps the application, Prometheus and Grafana deployment reproducible.
+
+## Design principles
+
+AquaVigil is built around four boundaries:
+
+- **Read-only by design:** analysis and visualization, not operational control.
+- **Evidence before claims:** findings are tied to supplied evidence and provenance.
+- **Explainability:** detections expose the condition and reasoning behind the finding.
+- **Safe demonstration:** bundled datasets are synthetic and separated from real infrastructure.
+
+## Limitations
+
+AquaVigil is an educational defensive prototype. Its output is not laboratory certification, engineering approval, legal advice, formal regulatory certification, or authorization to operate critical infrastructure. Real-world deployment would require explicit authorization, secure architecture, authenticated access, independent water-quality verification, validated engineering limits, change control, and qualified operators.
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+**AquaVigil v1.0.0 — defensive water intelligence with an explicit OT safety boundary.**
+
+</div>
