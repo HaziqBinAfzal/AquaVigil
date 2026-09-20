@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><span class="eyebrow">READ-ONLY EVIDENCE INGESTION</span><h1>Analyze water, process, Zeek, or Suricata evidence</h1><p>AquaVigil hashes the source, detects its evidence type, validates records, and explains every finding.</p></div></div>
+<div class="upload-layout">
+  <form class="dropzone" method="post" enctype="multipart/form-data">
+    <div class="upload-icon">⇧</div><h2>Drop synthetic evidence here</h2>
+    <p>CSV, JSON, or Suricata EVE JSON · maximum 4 MB · never upload real utility data</p>
+    <input id="evidence" name="evidence" type="file" accept=".csv,.json" required>
+    <label for="evidence" class="btn ghost">Choose evidence file</label><span id="filename">No file selected</span>
+    <button class="btn primary" type="submit">Validate, correlate, and explain →</button>
+  </form>
+  <aside class="intake-guide"><span class="eyebrow">SUPPORTED EVIDENCE</span><h2>Adapters and fields</h2>
+    <ul><li>Water/process: pH, conductivity, turbidity, chlorine, salinity, pressure, flow, temperature</li><li>Cyber-process: dosing command, authorization, source/destination zone</li><li>Zeek-style: endpoints, protocol/service, bytes, connection state, zones</li><li>Suricata EVE: alert signature, severity, endpoints, protocol, application</li></ul>
+    <div class="warning"><b>Safety boundary</b><p>This workstation analyzes exported synthetic evidence and never issues commands to PLCs, RTUs, pumps, valves, or dosing systems.</p></div>
+  </aside>
+</div>
+<section class="card sample-library"><div class="card-head"><div><span>SAMPLE EVIDENCE LIBRARY</span><h2>Download, inspect, and test every workflow</h2></div></div>
+  <div class="sample-grid">
+  {% for file,title,kind in [
+    ('normal_operation.csv','Normal water operation','Water/process'),
+    ('unexpected_dosing_incident.csv','Unauthorized dosing incident','Cyber-process'),
+    ('quality_excursion.csv','Water-quality excursion','Water quality'),
+    ('membrane_fouling.csv','Membrane fouling trend','Desalination'),
+    ('zeek_network_evidence.csv','Zeek-style connection evidence','Passive network'),
+    ('suricata_alerts.json','Suricata EVE alerts','IDS evidence')
+  ] %}<article><span>{{ kind }}</span><h3>{{ title }}</h3><code>{{ file }}</code><a href="{{ url_for('main.sample_file',filename=file) }}">Download sample ↓</a></article>{% endfor %}
+  </div>
+  <div class="actions"><a class="btn primary" href="{{ url_for('main.load_demo') }}">Run the controlled dosing scenario</a></div>
+</section>
+{% endblock %}

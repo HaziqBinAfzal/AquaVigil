@@ -1,0 +1,6 @@
+ts,uid,id.orig_h,id.resp_h,proto,service,duration,orig_bytes,resp_bytes,conn_state,source_zone,dest_zone,authorized
+2026-09-19T12:00:00Z,C1,10.20.10.15,10.20.30.10,tcp,modbus,0.42,180,240,SF,ot,ot,true
+2026-09-19T12:00:10Z,C2,10.20.40.8,10.20.20.15,tcp,https,1.25,820,4120,SF,dmz,ot,true
+2026-09-19T12:00:20Z,C3,10.10.5.44,10.20.30.10,tcp,modbus,0.09,96,0,REJ,enterprise,ot,false
+2026-09-19T12:00:30Z,C4,10.10.5.44,10.20.30.11,tcp,modbus,0.08,96,0,REJ,enterprise,ot,false
+2026-09-19T12:00:40Z,C5,10.20.10.16,10.20.30.11,tcp,modbus,0.51,200,280,SF,ot,ot,true

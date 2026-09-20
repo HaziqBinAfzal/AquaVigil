@@ -1,0 +1,8 @@
+timestamp,ph,conductivity,turbidity,chlorine,salinity,pressure,flow,temperature,dosing_command,authorized,source_zone
+2026-09-19T09:00:00Z,7.2,630,0.25,1.1,0.19,57,1160,24.2,hold,true,OT
+2026-09-19T09:05:00Z,7.1,635,0.27,1.2,0.20,58,1152,24.3,hold,true,OT
+2026-09-19T09:10:00Z,6.9,700,0.42,2.8,0.23,62,1120,24.4,increase_chlorine,false,enterprise
+2026-09-19T09:15:00Z,6.3,910,1.45,4.8,0.39,70,980,24.8,increase_chlorine,false,enterprise
+2026-09-19T09:20:00Z,6.1,1040,1.72,5.3,0.48,74,910,25.0,hold,true,OT
+2026-09-19T09:25:00Z,6.7,780,0.82,3.6,0.32,64,1030,24.7,hold,true,OT
+

@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ product_name }}{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='css/app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static',filename='css/live.css',v='1.0.0') }}">
+</head><body>
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('main.home') }}"><img class="brand-logo" src="{{ url_for('static',filename='img/aquavigil-logo.svg') }}" alt=""><span>AquaVigil<small>WATER INTELLIGENCE</small></span></a>
+  <nav class="journey-nav">
+    <p>START</p>
+    <a href="{{ url_for('main.dashboard') }}"><i>01</i>Overview</a>
+    <a href="{{ url_for('main.workspace',section='architecture') }}"><i>02</i>Architecture</a>
+    <a href="{{ url_for('main.upload') }}"><i>03</i>Analyze Evidence</a>
+    <p>PROCESS &amp; QUALITY</p>
+    <a href="{{ url_for('main.workspace',section='quality') }}"><i>04</i>Water Quality</a>
+    <a href="{{ url_for('main.workspace',section='desalination') }}"><i>05</i>Desalination</a>
+    <a href="{{ url_for('main.workspace',section='assets') }}"><i>06</i>Asset Health</a>
+    <p>PROTECT &amp; RESPOND</p>
+    <a href="{{ url_for('main.workspace',section='security') }}"><i>07</i>OT / SCADA Security</a>
+    <a href="{{ url_for('main.workspace',section='integrations') }}"><i>08</i>Zeek / Suricata</a>
+    <a href="{{ url_for('main.workspace',section='threats') }}"><i>09</i>Threat Center</a>
+    <p>DECIDE &amp; ASSURE</p>
+    <a href="{{ url_for('main.workspace',section='optimization') }}"><i>10</i>AI Optimization</a>
+    <a href="{{ url_for('main.workspace',section='compliance') }}"><i>11</i>Compliance</a>
+    <a href="{{ url_for('main.history') }}"><i>12</i>Reports &amp; History</a>
+    <p>OPERATE THE PLATFORM</p>
+    <a href="{{ url_for('main.workspace',section='devsecops') }}"><i>13</i>DevSecOps</a>
+    <a href="{{ url_for('main.workspace',section='monitoring') }}"><i>14</i>Monitoring</a>
+  </nav>
+  <div class="demo-label"><i></i>SYNTHETIC DEMO ONLY</div>
+</aside>
+<main class="shell"><header class="topbar"><button class="menu" id="menu">☰</button><div><b>Smart Water Operations</b><span>Decision support · Operator authority</span></div><div class="operator"><span class="pulse"></span>Platform online</div></header>
+{% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+{% block content %}{% endblock %}
+<footer>© 2026 AquaVigil · Defensive, read-only water infrastructure assurance · No connection to operational control systems</footer></main>
+<script>window.AQUAVIGIL_STATUS_URL={{ url_for('main.api_status')|tojson }};</script><script src="{{ url_for('static',filename='js/app.js') }}"></script>{% block scripts %}{% endblock %}</body></html>

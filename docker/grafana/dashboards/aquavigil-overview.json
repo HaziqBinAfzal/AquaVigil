@@ -1,0 +1,24 @@
+{
+  "annotations":{"list":[]},"editable":true,"graphTooltip":1,"schemaVersion":41,
+  "tags":["water","desalination","ot-security","live-evidence"],
+  "time":{"from":"now-6h","to":"now"},"refresh":"10s","timezone":"browser",
+  "title":"AquaVigil Live Water Operations","uid":"aquavigil-overview","version":2,
+  "panels":[
+    {"type":"stat","title":"Assurance Risk","description":"Latest evidence-weighted risk score","targets":[{"expr":"aquavigil_last_risk_score","legendFormat":"Risk"}],"fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":25},{"color":"red","value":60}]}}},"gridPos":{"h":5,"w":4,"x":0,"y":0}},
+    {"type":"gauge","title":"Evidence Confidence","targets":[{"expr":"aquavigil_last_sensor_confidence_percent"}],"fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100,"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"yellow","value":70},{"color":"green","value":90}]}}},"gridPos":{"h":5,"w":4,"x":4,"y":0}},
+    {"type":"stat","title":"Records Analyzed","targets":[{"expr":"aquavigil_last_records"}],"gridPos":{"h":5,"w":4,"x":8,"y":0}},
+    {"type":"stat","title":"Critical Findings","targets":[{"expr":"aquavigil_last_findings{severity=\"critical\"}"}],"fieldConfig":{"defaults":{"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":1}]}}},"gridPos":{"h":5,"w":4,"x":12,"y":0}},
+    {"type":"stat","title":"Network Alerts","targets":[{"expr":"aquavigil_network_alerts"}],"gridPos":{"h":5,"w":4,"x":16,"y":0}},
+    {"type":"stat","title":"Cross-Zone Connections","targets":[{"expr":"aquavigil_cross_zone_connections"}],"gridPos":{"h":5,"w":4,"x":20,"y":0}},
+    {"type":"timeseries","title":"Risk and Confidence Trend","targets":[{"expr":"aquavigil_last_risk_score","legendFormat":"Risk"},{"expr":"aquavigil_last_sensor_confidence_percent","legendFormat":"Confidence"}],"fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100}},"gridPos":{"h":8,"w":12,"x":0,"y":5}},
+    {"type":"timeseries","title":"Water Quality Signals","targets":[{"expr":"aquavigil_sensor_latest{sensor=~\"ph|turbidity|chlorine|salinity\"}","legendFormat":"{{sensor}} ({{unit}})"}],"gridPos":{"h":8,"w":12,"x":12,"y":5}},
+    {"type":"timeseries","title":"Desalination Pressure and Flow","targets":[{"expr":"aquavigil_sensor_latest{sensor=~\"pressure|flow\"}","legendFormat":"{{sensor}} ({{unit}})"}],"gridPos":{"h":8,"w":12,"x":0,"y":13}},
+    {"type":"timeseries","title":"Conductivity and Temperature","targets":[{"expr":"aquavigil_sensor_latest{sensor=~\"conductivity|temperature\"}","legendFormat":"{{sensor}} ({{unit}})"}],"gridPos":{"h":8,"w":12,"x":12,"y":13}},
+    {"type":"gauge","title":"Membrane Fouling Risk","targets":[{"expr":"aquavigil_membrane_fouling_risk_percent"}],"fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100,"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":45},{"color":"red","value":70}]}}},"gridPos":{"h":7,"w":6,"x":0,"y":21}},
+    {"type":"stat","title":"Specific Energy","targets":[{"expr":"aquavigil_specific_energy_kwh_m3"}],"fieldConfig":{"defaults":{"unit":"kWh"}},"gridPos":{"h":7,"w":6,"x":6,"y":21}},
+    {"type":"stat","title":"Daily Demand Forecast","targets":[{"expr":"aquavigil_demand_forecast_m3_day"}],"fieldConfig":{"defaults":{"unit":"m3"}},"gridPos":{"h":7,"w":6,"x":12,"y":21}},
+    {"type":"stat","title":"Passive Network Events","targets":[{"expr":"aquavigil_network_events"}],"gridPos":{"h":7,"w":6,"x":18,"y":21}},
+    {"type":"bargauge","title":"Standards Evidence Coverage","targets":[{"expr":"aquavigil_compliance_evidence","legendFormat":"{{framework}}"}],"fieldConfig":{"defaults":{"min":0,"max":1,"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}}},"gridPos":{"h":8,"w":12,"x":0,"y":28}},
+    {"type":"timeseries","title":"Analysis Throughput","targets":[{"expr":"increase(aquavigil_analyses_total[1h])","legendFormat":"{{status}} · {{source_type}}"}],"gridPos":{"h":8,"w":12,"x":12,"y":28}}
+  ]
+}

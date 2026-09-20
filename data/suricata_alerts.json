@@ -1,0 +1,5 @@
+[
+  {"timestamp":"2026-09-19T12:10:00Z","event_type":"alert","src_ip":"10.10.5.44","dest_ip":"10.20.30.10","proto":"TCP","app_proto":"modbus","alert":{"signature":"ET ICS Unauthorized Modbus Write Attempt","severity":1}},
+  {"timestamp":"2026-09-19T12:10:05Z","event_type":"alert","src_ip":"10.20.40.8","dest_ip":"10.20.20.15","proto":"TCP","app_proto":"http","alert":{"signature":"POLICY Unexpected Administrative Service","severity":2}},
+  {"timestamp":"2026-09-19T12:10:10Z","event_type":"flow","src_ip":"10.20.10.15","dest_ip":"10.20.30.10","proto":"TCP","app_proto":"modbus","flow":{"pkts_toserver":12,"pkts_toclient":11}}
+]

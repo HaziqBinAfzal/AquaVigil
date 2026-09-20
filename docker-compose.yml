@@ -1,0 +1,43 @@
+services:
+  aquavigil:
+    build: .
+    environment:
+      PROMETHEUS_PUBLIC_URL: "http://localhost:${PROMETHEUS_PORT:-9090}"
+      GRAFANA_PUBLIC_URL: "http://localhost:${GRAFANA_PORT:-3000}"
+      AQUAVIGIL_SECRET_KEY: "${AQUAVIGIL_SECRET_KEY:-}"
+      AQUAVIGIL_RESET_ON_START: "${AQUAVIGIL_RESET_ON_START:-1}"
+    ports: ["${APP_PORT:-8000}:5000"]
+    volumes: ["aquavigil-data:/app/instance"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes: ["./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["${PROMETHEUS_PORT:-9090}:9090"]
+    depends_on: [aquavigil]
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: aquavigil
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["${GRAFANA_PORT:-3000}:3000"]
+    depends_on: [prometheus]
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+volumes:
+  aquavigil-data:
