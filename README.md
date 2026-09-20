@@ -61,7 +61,7 @@ AquaVigil's workspace is organized around the operational workflow:
 
 **Overview → Analyze Evidence → Water Quality → Desalination → Asset Health → OT / SCADA Security → Threat Center → Zeek / Suricata → Reports**
 
-The repository includes the AquaVigil visual assets and complete responsive web interface. Project screenshots can be added under `docs/screenshots/` to create a visual gallery without changing the application itself.
+The repository includes the AquaVigil visual assets and complete responsive web interface.
 
 ## Quick start
 
