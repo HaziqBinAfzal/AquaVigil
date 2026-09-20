@@ -3,4 +3,4 @@ prometheus-client==0.22.1
 pytest==9.0.3
 gunicorn==23.0.0
 bandit==1.9.2
-pip-audit==2.9.0
+pip-audit==2.10.1
