@@ -16,6 +16,28 @@
 
 </div>
 
+## Quick Start
+
+**Windows 10/11 + Docker Desktop**
+
+1. Download the latest AquaVigil release and **extract the ZIP completely**.
+2. Start **Docker Desktop** and wait until the Docker engine is running.
+3. Open the extracted AquaVigil folder.
+4. Double-click `OPEN-AQUAVIGIL.vbs`.
+5. When startup completes, open `http://localhost:8000`.
+
+For visible startup diagnostics, use `START-AQUAVIGIL.cmd` instead.
+
+After launch:
+
+| Service | Address |
+|---|---|
+| **AquaVigil** | `http://localhost:8000` |
+| **Grafana** | `http://localhost:3000` |
+| **Prometheus** | `http://localhost:9090` |
+
+> New installation? See [Installation and running AquaVigil](#installation-and-running-aquavigil) below for prerequisites, installation location, Git clone instructions, macOS/Linux steps, and troubleshooting.
+
 > [!IMPORTANT]
 > **Safety boundary:** AquaVigil is a defensive, read-only educational prototype. All bundled evidence is synthetic. It must never be connected directly to a real utility, SCADA network, controller, pump, valve, dosing system, or safety function.
 
