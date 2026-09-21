@@ -64,6 +64,70 @@ flowchart LR
     K --> L[Grafana Dashboard]
 ```
 
+## Architecture overview
+
+AquaVigil separates evidence ingestion, analysis, decision support, reporting, and observability while maintaining an explicit read-only safety boundary.
+
+```mermaid
+flowchart TB
+    U[User / Analyst] --> UI[AquaVigil Web Interface]
+
+    subgraph EVIDENCE["Evidence & Provenance"]
+        E[CSV / JSON / JSONL]
+        V[Validation]
+        H[SHA-256 Provenance]
+        T[Evidence-Type Detection]
+        E --> V --> H --> T
+    end
+
+    subgraph INTEL["Analysis & Intelligence"]
+        W[Water Quality]
+        D[Desalination]
+        A[Asset Health]
+        O[OT / SCADA Security]
+        Z[Zeek / Suricata]
+        C[Cyber-Process Correlation]
+        T --> W
+        T --> D
+        T --> A
+        T --> O
+        T --> Z
+        W --> C
+        D --> C
+        A --> C
+        O --> C
+        Z --> C
+    end
+
+    subgraph ASSURANCE["Assurance & Decision Support"]
+        F[Explainable Findings]
+        R[Professional Reports]
+        DB[(Audit / Report History)]
+        C --> F
+        F --> R
+        F --> DB
+    end
+
+    subgraph OBS["Observability"]
+        P[Prometheus]
+        G[Grafana]
+        P --> G
+    end
+
+    UI --> E
+    UI --> P
+
+    SAFE[Read-Only Safety Boundary] --- UI
+    NOC[No PLC / Pump / Valve / Dosing Commands] --- SAFE
+```
+
+### Architecture documentation
+
+The full architecture catalog contains **20 architecture views** covering the platform, water-quality pipeline, desalination intelligence, asset health, OT/SCADA defensive zones, industrial DMZ, passive monitoring, cyber-process correlation, anomaly analysis, reporting, observability, Docker deployment, safety boundaries, failure recovery, CI, and human decision authority.
+
+- [Complete Architecture](docs/ARCHITECTURE.md)
+- [Architecture Catalog](docs/ARCHITECTURE_CATALOG.md)
+
 ## Core capabilities
 
 | Domain | What AquaVigil demonstrates |
