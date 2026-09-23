@@ -172,8 +172,7 @@ AquaVigil is designed to help answer:
 | Automated testing            |             ✅            |
 | GitHub Actions CI            |             ✅            |
 | Dependency maintenance       |             ✅            |
-| Industrial-control commands  | ❌ Intentionally excluded |
-| Autonomous physical response | ❌ Intentionally excluded |
+
 
 ---
 
