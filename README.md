@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil Logo" width="190">
+  <img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil Logo" width="210">
 </p>
 
 <h1 align="center">💧 AquaVigil</h1>
@@ -33,26 +33,29 @@
 
 ## Overview
 
-**AquaVigil** is a defensive water-intelligence and OT/SCADA security workstation designed to transform synthetic or safely exported water-quality, desalination, process, asset, and cybersecurity evidence into traceable defensive intelligence.
+**AquaVigil** is a defensive water-intelligence and OT/SCADA security workstation that transforms synthetic or safely exported water-quality, desalination, process, asset, and cybersecurity evidence into traceable and explainable defensive intelligence.
 
-Instead of treating operational-process observations and cybersecurity evidence as completely separate problems, AquaVigil brings them into one evidence-driven workflow.
+Instead of treating operational-process behavior and cybersecurity activity as completely separate problems, AquaVigil brings them together in one evidence-driven workflow.
 
-It can:
+The platform can:
 
 * validate and normalize supplied evidence;
 * calculate SHA-256 provenance;
 * identify supported evidence types;
-* analyze water and desalination observations;
+* analyze water-quality and desalination observations;
 * provide asset-health context;
 * analyze passive OT/SCADA security evidence;
 * interpret Zeek-style and Suricata-style evidence;
-* correlate cyber and process observations;
+* correlate cyber and physical-process observations;
 * generate explainable findings;
-* preserve report and analysis history;
-* expose application metrics to Prometheus;
+* generate professional reports;
+* preserve analysis and report history;
+* expose application metrics through Prometheus;
 * visualize supported telemetry through Grafana.
 
-AquaVigil ends at **analysis, explanation, reporting, and human review**.
+AquaVigil ends at:
+
+**Analysis → Explanation → Reporting → Human Review**
 
 It does **not** control industrial infrastructure.
 
@@ -60,17 +63,18 @@ It does **not** control industrial infrastructure.
 
 ## Navigation
 
-[Quick Start](#quick-start) ·
 [Why AquaVigil](#why-aquavigil) ·
-[Capabilities](#core-capabilities) ·
-[Workflow](#evidence-to-decision-workflow) ·
+[Core Capabilities](#core-capabilities) ·
+[How It Works](#how-aquavigil-works) ·
 [Architecture](#platform-architecture) ·
+[Intelligence Domains](#intelligence-domains) ·
 [Workspaces](#platform-workspaces) ·
 [Example Analysis](#example-analysis-journey) ·
-[Monitoring](#observability) ·
+[Safety](#otscada-safety-boundary) ·
+[Observability](#observability) ·
+[Quick Start](#quick-start) ·
 [Testing](#developer-setup--testing) ·
-[Documentation](#documentation) ·
-[Security](#security--safety-boundary)
+[Documentation](#documentation)
 
 ---
 
@@ -78,39 +82,49 @@ It does **not** control industrial infrastructure.
 
 Water and desalination infrastructure combines two important realities:
 
-**physical-process behavior** and **cybersecurity behavior**.
+**Physical-process behavior**
 
-Looking at only one side can remove useful context.
+and
 
-A process observation may deserve more attention when relevant cybersecurity evidence exists at the same time. Likewise, a network alert may become more meaningful when process or asset evidence provides additional context.
+**Cybersecurity behavior**
 
-AquaVigil therefore follows an **evidence-to-decision-support** model.
+Looking at only one side can remove important context.
+
+A process anomaly may become more significant when relevant cybersecurity evidence appears at the same time.
+
+Likewise, a cybersecurity alert may become more meaningful when process, water-quality, or asset evidence provides additional context.
+
+AquaVigil connects these two evidence domains.
 
 ```mermaid
-flowchart LR
-    WP["💧 Water / Process Evidence"]
-    CY["🛡️ Cybersecurity Evidence"]
-    AS["⚙️ Asset Context"]
+flowchart TB
 
-    WP --> COR["🔗 Cyber-Process Correlation"]
-    CY --> COR
-    AS --> COR
+    A["💧 PROCESS EVIDENCE<br/><br/>Water · Desalination · Assets"]
 
-    COR --> FIND["🧠 Explainable Finding"]
-    FIND --> REP["📄 Evidence-Backed Report"]
-    REP --> HUMAN["👤 Human Review"]
+    B["🛡️ CYBER EVIDENCE<br/><br/>Network · Zeek · Suricata"]
+
+    C["🔗 CORRELATE<br/><br/>Cyber + Process Context"]
+
+    D["🧠 EXPLAIN<br/><br/>Evidence-Backed Finding"]
+
+    E["👤 HUMAN REVIEW"]
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
 ```
 
-The objective is not simply to display an alert.
+The goal is not simply to generate another alert.
 
 AquaVigil is designed to help answer:
 
 * What was observed?
 * Which evidence supports the finding?
 * What condition was expected?
-* How was the observation detected?
+* Why was the observation detected?
 * Are cyber and process observations related?
-* What may require human review?
+* What may require further review?
 * What is a safe next step?
 * Who retains operational authority?
 
@@ -136,7 +150,7 @@ AquaVigil is designed to help answer:
 | Cyber-process correlation    |             ✅            |
 | Explainable findings         |             ✅            |
 | Professional reporting       |             ✅            |
-| Report history               |             ✅            |
+| Analysis/report history      |             ✅            |
 | Prometheus metrics           |             ✅            |
 | Grafana visualization        |             ✅            |
 | Docker Compose deployment    |             ✅            |
@@ -148,28 +162,37 @@ AquaVigil is designed to help answer:
 
 ---
 
-# Evidence-to-Decision Workflow
+# How AquaVigil Works
 
-AquaVigil follows one traceable analytical path from supplied evidence to human review.
+The complete AquaVigil workflow can be understood in five stages.
 
 ```mermaid
-flowchart LR
-    A["📥 Evidence"] --> B["✓ Validate"]
-    B --> C["#️⃣ SHA-256"]
-    C --> D["🏷️ Classify"]
-    D --> E["🔎 Analyze"]
-    E --> F["🔗 Correlate"]
-    F --> G["💡 Explain"]
-    G --> H["📄 Report"]
-    H --> I["👤 Human Review"]
+flowchart TB
+
+    A["📥 1 · EVIDENCE<br/><br/>Upload Supported Data"]
+
+    B["🔎 2 · ANALYZE<br/><br/>Validate · Hash · Classify · Inspect"]
+
+    C["🔗 3 · CORRELATE<br/><br/>Connect Cyber + Process Context"]
+
+    D["💡 4 · EXPLAIN<br/><br/>Generate Evidence-Backed Findings"]
+
+    E["👤 5 · HUMAN REVIEW<br/><br/>Review · Verify · Decide"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 ```
 
-### The important boundary
+### The decision boundary
+
+AquaVigil deliberately separates machine-assisted analysis from operational authority.
 
 ```text
 Evidence
    ↓
-Machine-Assisted Analysis
+Analysis
    ↓
 Explainable Finding
    ↓
@@ -182,79 +205,46 @@ Authorized Decision Outside AquaVigil
 
 A detection is **not** automatically converted into an operational action.
 
-Machine-assisted analysis and operational authority remain deliberately separated.
-
 ---
 
 # Platform Architecture
 
-The platform is organized into distinct evidence, application, intelligence, persistence, observability, and human-review layers.
+The platform architecture is intentionally divided into a few understandable layers.
 
 ```mermaid
 flowchart TB
 
-    subgraph EVIDENCE["📥 EVIDENCE LAYER"]
-        W["Water / Process"]
-        D["Desalination"]
-        A["Asset Evidence"]
-        Z["Zeek-Style"]
-        S["Suricata-Style"]
-    end
+    A["📥 EVIDENCE<br/><br/>Water · Process · Asset<br/>Zeek · Suricata"]
 
-    subgraph APPLICATION["⚙️ APPLICATION & ANALYSIS"]
-        V["Validation"]
-        P["SHA-256 Provenance"]
-        T["Evidence Classification"]
-        AN["Analysis Engine"]
-        C["Correlation Engine"]
-    end
+    B["⚙️ ANALYSIS ENGINE<br/><br/>Validate · Provenance<br/>Classify · Analyze"]
 
-    subgraph INTELLIGENCE["🧠 INTELLIGENCE"]
-        F["Explainable Findings"]
-        R["Professional Reports"]
-        H["Audit / Report History"]
-    end
+    C["🔗 INTELLIGENCE<br/><br/>Correlate · Explain"]
 
-    subgraph OBS["📊 OBSERVABILITY"]
-        M["Metrics"]
-        PR["Prometheus"]
-        G["Grafana"]
-    end
+    D["📄 OUTPUT<br/><br/>Findings · Reports · History"]
 
-    HUMAN["👤 Human Reviewer"]
+    E["👤 HUMAN REVIEW"]
 
-    W --> V
-    D --> V
-    A --> V
-    Z --> V
-    S --> V
+    F["📊 OBSERVABILITY<br/><br/>Prometheus · Grafana"]
 
-    V --> P
-    P --> T
-    T --> AN
-    AN --> C
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 
-    C --> F
-    F --> R
-    F --> H
-
-    F --> M
-    M --> PR
-    PR --> G
-
-    R --> HUMAN
-    H --> HUMAN
+    B --> F
 ```
 
-### Architecture principle
-
 > **Evidence enters AquaVigil. Intelligence leaves AquaVigil. Industrial commands do not.**
+
+Detailed component-level architecture is intentionally kept in:
+
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ---
 
 # Evidence Ingestion & Provenance
 
-AquaVigil accepts supported structured evidence formats:
+AquaVigil accepts supported structured evidence formats.
 
 | Format | Support |
 | ------ | :-----: |
@@ -262,20 +252,28 @@ AquaVigil accepts supported structured evidence formats:
 | JSON   |    ✅    |
 | JSONL  |    ✅    |
 
-The ingestion pipeline follows:
+Evidence follows a traceable ingestion path:
 
 ```mermaid
-flowchart LR
-    U["Upload"] --> V["File Validation"]
-    V -->|Valid| P["Parsing"]
-    V -->|Invalid| X["Safe Rejection"]
-    P --> N["Normalization"]
-    N --> H["SHA-256 Provenance"]
-    H --> T["Evidence-Type Detection"]
-    T --> A["Analysis"]
+flowchart TB
+
+    A["📄 SUPPLIED EVIDENCE"]
+
+    B["✓ VALIDATE"]
+
+    C["#️⃣ SHA-256 PROVENANCE"]
+
+    D["🏷️ IDENTIFY EVIDENCE TYPE"]
+
+    E["🔎 ANALYZE"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 ```
 
-SHA-256 provenance helps maintain a traceable relationship between:
+SHA-256 provenance maintains a traceable relationship between the original supplied evidence and the analysis produced from it.
 
 ```text
 Original Evidence
@@ -289,9 +287,11 @@ Findings
 Report
 ```
 
-This improves reproducibility and makes it possible to identify which supplied evidence produced a particular analytical result.
+This supports reproducibility and helps identify which supplied evidence produced a particular analytical result.
 
-Evidence is treated as **input for analysis**, not automatic proof that a real-world incident occurred.
+Evidence remains **input for analysis**.
+
+It is not automatically treated as proof that a real-world incident occurred.
 
 ---
 
@@ -299,7 +299,7 @@ Evidence is treated as **input for analysis**, not automatic proof that a real-w
 
 ## 💧 Water Quality
 
-Supported evidence can include observations involving:
+AquaVigil can reason over supported water and process observations involving values such as:
 
 * pH;
 * conductivity;
@@ -310,38 +310,40 @@ Supported evidence can include observations involving:
 * pressure;
 * flow.
 
-AquaVigil can compare supported observations against expected analytical conditions and produce evidence-backed findings.
+Supported observations can be compared against expected analytical conditions to produce evidence-backed findings.
 
-It does not replace laboratory verification or qualified engineering judgment.
+AquaVigil does not replace laboratory verification or qualified engineering judgment.
 
 ---
 
-## 🌊 Desalination
+## 🌊 Desalination Intelligence
 
-The desalination workspace supports reasoning involving:
+The desalination workspace supports evidence-driven reasoning involving:
 
 * membrane indicators;
 * fouling observations;
-* feed/process conditions;
+* feed and process conditions;
 * specific-energy indicators;
 * demand-oriented analysis;
 * operational trends;
 * visible decision-support reasoning.
 
-The objective is to expose **why** an observation exists rather than displaying only a status label.
+The objective is to expose **why** an observation exists instead of displaying only a status label.
 
 ---
 
 ## ⚙️ Asset Health
 
-Asset-related evidence provides additional context for:
+Asset evidence provides additional context for:
 
 * process anomalies;
 * water-quality observations;
 * desalination findings;
 * cybersecurity correlation.
 
-Asset-health output is evidence-based decision support and does not independently certify the physical condition of real equipment.
+Asset-health output remains decision support.
+
+It does not independently certify the physical condition of real industrial equipment.
 
 ---
 
@@ -358,7 +360,7 @@ AquaVigil can analyze supplied defensive evidence involving:
 * passive network evidence;
 * security events.
 
-Its architecture assumes **passive or safely exported evidence**.
+The architecture assumes **passive or safely exported evidence**.
 
 ---
 
@@ -372,9 +374,9 @@ Example:
 data/zeek_network_evidence.csv
 ```
 
-Can contribute:
+Supported evidence can contribute context involving:
 
-* source and destination context;
+* source and destination activity;
 * connection behavior;
 * protocols;
 * services;
@@ -388,62 +390,43 @@ Example:
 data/suricata_alerts.json
 ```
 
-Can contribute:
+Supported evidence can contribute:
 
 * IDS alerts;
 * signature context;
 * event metadata;
 * network-security observations.
 
-These inputs contribute to defensive analysis and correlation. They do not create active network or industrial-control capability.
+These inputs contribute to defensive analysis.
+
+They do not provide AquaVigil with active network or industrial-control capability.
 
 ---
 
 # Cyber-Process Correlation
 
-AquaVigil's correlation layer brings multiple evidence domains together.
+One of AquaVigil's central ideas is combining cybersecurity evidence with process evidence.
 
 ```mermaid
-flowchart LR
+flowchart TB
 
-    subgraph CYBER["🛡️ CYBER CONTEXT"]
-        NET["Connection Context"]
-        AUTH["Authorization Context"]
-        IDS["IDS / Signature Context"]
-    end
+    A["💧 PROCESS<br/><br/>Water · Desalination · Assets"]
 
-    subgraph PROCESS["💧 PROCESS CONTEXT"]
-        WATER["Water Evidence"]
-        ASSET["Asset Context"]
-        DESAL["Desalination Context"]
-    end
+    B["🛡️ CYBER<br/><br/>Network · Zeek · Suricata"]
 
-    NET --> COR["🔗 CORRELATION ENGINE"]
-    AUTH --> COR
-    IDS --> COR
+    C["🔗 CYBER + PROCESS<br/>CORRELATION"]
 
-    WATER --> COR
-    ASSET --> COR
-    DESAL --> COR
+    D["🧠 EXPLAINABLE<br/>FINDING"]
 
-    COR --> FIND["🧠 EXPLAINABLE FINDING"]
+    E["👤 HUMAN<br/>REVIEW"]
 
-    FIND --> OBS["Observed Evidence"]
-    FIND --> EXP["Expected Condition"]
-    FIND --> METHOD["Detection Method"]
-    FIND --> IMPACT["Potential Impact"]
-    FIND --> RESPONSE["Safe Response"]
+    A --> C
+    B --> C
+    C --> D
+    D --> E
 ```
 
-This allows AquaVigil to explain not only **what was observed**, but **why the observation may deserve human review**.
-
----
-
-# Explainable Findings
-
-AquaVigil avoids treating unexplained alert scores as final conclusions.
-
-A supported finding can expose:
+A supported finding can expose information such as:
 
 ```text
 Observed Evidence
@@ -455,19 +438,14 @@ Safe Response
 Provenance
 ```
 
-The platform therefore helps answer:
+The important distinction is:
 
-**What happened?**
+```text
+Alert ≠ Conclusion
+Finding ≠ Authorized Action
+```
 
-**Why was it detected?**
-
-**Which evidence supports it?**
-
-**What should be reviewed next?**
-
-A finding remains an analytical result.
-
-It does not automatically prove a real-world attack, equipment failure, or water-quality incident.
+AquaVigil provides evidence and context for human review.
 
 ---
 
@@ -489,121 +467,125 @@ It does not automatically prove a real-world attack, equipment failure, or water
 
 # Example Analysis Journey
 
-A typical demonstration might use:
+A demonstration can begin with a bundled synthetic evidence file such as:
 
 ```text
 data/unexpected_dosing_incident.csv
 ```
 
-The evidence journey becomes:
+The analysis journey is intentionally simple:
 
 ```mermaid
-flowchart LR
-    FILE["📄 Evidence File"]
-    FILE --> VAL["✓ Validate"]
-    VAL --> HASH["#️⃣ Generate Provenance"]
-    HASH --> TYPE["🏷️ Detect Evidence Type"]
-    TYPE --> ANALYZE["🔎 Analyze"]
-    ANALYZE --> PROC["💧 Process Observation"]
-    ANALYZE --> SEC["🛡️ Security Context"]
-    PROC --> COR["🔗 Correlate"]
-    SEC --> COR
-    COR --> FIND["🧠 Explainable Finding"]
-    FIND --> REPORT["📄 Report"]
-    REPORT --> HUMAN["👤 Human Review"]
+flowchart TB
+
+    A["📄 EVIDENCE FILE"]
+
+    B["🔎 ANALYZE"]
+
+    C["🔗 CORRELATE"]
+
+    D["🧠 EXPLAIN"]
+
+    E["📄 REPORT"]
+
+    F["👤 HUMAN REVIEW"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
 ```
 
-The important point is that AquaVigil does not jump from:
+Internally, AquaVigil can perform additional validation, provenance, classification, analytical, and correlation steps.
 
-```text
-Detection → Action
-```
+The user-facing principle remains:
 
-Instead:
-
-```text
-Detection
-    ↓
-Evidence
-    ↓
-Explanation
-    ↓
-Correlation
-    ↓
-Report
-    ↓
-Human Review
-```
+> **Evidence → Analysis → Explanation → Human Review**
 
 ---
 
-# OT / SCADA Safety Architecture
+# OT/SCADA Safety Boundary
 
-AquaVigil deliberately separates analysis from industrial control.
+This is one of AquaVigil's most important architectural boundaries.
+
+AquaVigil receives evidence from the operational environment.
+
+It does **not** send industrial-control commands back into that environment.
 
 ```mermaid
-flowchart LR
+flowchart TB
 
-    subgraph ENTERPRISE["Enterprise / SOC"]
-        SOC["Security / Analyst"]
-    end
+    A["🏭 OT / SCADA ENVIRONMENT<br/><br/>SCADA · PLC · RTU · Sensors"]
 
-    subgraph DMZ["Industrial DMZ"]
-        GW["Controlled Gateway"]
-        EXP["Exported Evidence"]
-    end
+    B["📤 PASSIVE / EXPORTED<br/>EVIDENCE"]
 
-    subgraph OT["OT / SCADA — Conceptual"]
-        HMI["HMI"]
-        SCADA["SCADA"]
-        PLC["PLC / RTU"]
-    end
+    C["💧 AQUAVIGIL<br/><br/>Analyze · Correlate<br/>Explain · Report"]
 
-    subgraph PHYSICAL["Physical Process — Conceptual"]
-        PUMP["Pumps"]
-        VALVE["Valves"]
-        DOSING["Dosing"]
-        TREAT["Treatment / Desalination"]
-    end
+    D["👤 HUMAN REVIEW"]
 
-    OT -->|"Passive / Exported Evidence"| EXP
-    EXP --> AV["💧 AquaVigil"]
-    AV --> FIND["Read-Only Findings"]
-    FIND --> SOC
+    E["🚫 NO CONTROL PATH<br/><br/>No PLC · Pump · Valve<br/>or Dosing Commands"]
 
-    SCADA --> PLC
-    PLC --> PHYSICAL
+    A --> B
+    B --> C
+    C --> D
 
-    AV -. "NO CONTROL PATH" .-> BLOCK["🚫 No PLC / Pump / Valve / Dosing Commands"]
+    C -.-> E
 ```
 
-The OT and physical-process components shown here are conceptual context.
+The OT/SCADA components shown above are conceptual context.
 
-They do not represent a real facility topology.
+They do not represent a real utility topology.
+
+### AquaVigil stops here
+
+```text
+OBSERVE
+   ↓
+ANALYZE
+   ↓
+EXPLAIN
+   ↓
+REPORT
+   ↓
+HUMAN REVIEW
+   ↓
+STOP
+```
+
+There is no AquaVigil path for:
+
+```text
+PLC manipulation
+SCADA write operations
+Pump commands
+Valve commands
+Chemical-dosing commands
+Process setpoint changes
+Safety-function manipulation
+Autonomous operational response
+```
 
 ---
 
 # Observability
 
-AquaVigil integrates **Prometheus** and **Grafana** for local observability.
+AquaVigil uses a deliberately simple local observability architecture.
 
 ```mermaid
-flowchart LR
-    USER["Browser"]
-    APP["💧 AquaVigil<br/>:8000"]
-    MET["/metrics"]
-    PROM["📊 Prometheus<br/>:9090"]
-    GRAF["📈 Grafana<br/>:3000"]
+flowchart TB
 
-    USER --> APP
-    APP --> MET
-    MET --> PROM
-    PROM --> GRAF
-    USER --> GRAF
-    USER --> PROM
+    A["💧 AQUAVIGIL<br/><br/>Application · :8000"]
+
+    B["📊 PROMETHEUS<br/><br/>Metrics · :9090"]
+
+    C["📈 GRAFANA<br/><br/>Visualization · :3000"]
+
+    A -->|"/metrics"| B
+    B --> C
 ```
 
-Monitoring is intentionally separate from operational control.
+Monitoring is separate from operational control.
 
 ## Default Services
 
@@ -635,16 +617,18 @@ Install:
 * Windows 10/11;
 * a modern browser.
 
-Clone AquaVigil:
+Clone the repository:
 
 ```bash
 git clone https://github.com/HaziqBinAfzal/AquaVigil.git
 cd AquaVigil
 ```
 
+---
+
 ## Windows — Recommended
 
-Start **Docker Desktop** and wait for the Docker engine to become ready.
+Start **Docker Desktop** and wait until the Docker engine is ready.
 
 Then double-click:
 
@@ -676,7 +660,7 @@ Start the complete stack:
 docker compose up --build -d
 ```
 
-Check container state:
+Check container status:
 
 ```bash
 docker compose ps
@@ -688,32 +672,25 @@ View logs:
 docker compose logs -f
 ```
 
-Stop AquaVigil:
+Stop the stack:
 
 ```bash
 docker compose down
 ```
 
-## Docker Architecture
+## Deployment Model
 
-```mermaid
-flowchart LR
-    B["🌐 Browser"]
-
-    subgraph COMPOSE["🐳 Docker Compose"]
-        A["AquaVigil<br/>Container"]
-        P["Prometheus<br/>Container"]
-        G["Grafana<br/>Container"]
-    end
-
-    B -->|":8000"| A
-    A -->|"Metrics"| P
-    P -->|"Datasource"| G
-    B -->|":9090"| P
-    B -->|":3000"| G
+```text
+Browser
+   │
+   ├── AquaVigil  :8000
+   │
+   ├── Prometheus :9090
+   │
+   └── Grafana    :3000
 ```
 
-The v1.0.0 Compose deployment intentionally remains small:
+The v1.0.0 Compose environment intentionally remains small:
 
 ```text
 AquaVigil
@@ -740,7 +717,9 @@ data/
 | `zeek_network_evidence.csv`      | Passive network evidence         |
 | `suricata_alerts.json`           | IDS-style event evidence         |
 
-All bundled scenarios are **synthetic** and intended for safe education, demonstration, and testing.
+All bundled scenarios are **synthetic**.
+
+They are intended for safe education, demonstration, development, and testing.
 
 ---
 
@@ -767,11 +746,11 @@ All bundled scenarios are **synthetic** and intended for safe education, demonst
 
 # Developer Setup & Testing
 
-Docker is recommended for the complete demonstration environment.
+Docker is recommended for the complete AquaVigil demonstration environment.
 
 For local Python development:
 
-### 1. Create the environment
+### 1. Create a virtual environment
 
 ```powershell
 py -3.12 -m venv .venv
@@ -807,43 +786,32 @@ pytest -q
 python run.py
 ```
 
-The local Python development route runs at:
+The direct Python development server runs at:
 
 ```text
 http://localhost:5000
 ```
 
-> The direct Python development route does not automatically launch Prometheus or Grafana.
+> Direct Python development does not automatically start Prometheus or Grafana.
 
 ---
 
-# DevSecOps Pipeline
+# DevSecOps & CI
 
 AquaVigil includes automated repository validation and dependency maintenance.
 
-```mermaid
-flowchart LR
-    DEV["Developer Change"]
-    GIT["Git Commit"]
-    GH["GitHub"]
-    CI["GitHub Actions"]
-    TEST["Automated Tests"]
-    CHECK["Validation"]
-    GATE{"Quality Gate"}
+The workflow is intentionally straightforward:
 
-    DEV --> GIT
-    GIT --> GH
-    GH --> CI
-
-    CI --> TEST
-    CI --> CHECK
-
-    TEST --> GATE
-    CHECK --> GATE
-
-    GATE -->|Pass| GREEN["✅ Validated"]
-    GATE -->|Fail| FIX["🔧 Fix & Re-Test"]
-    FIX --> DEV
+```text
+CODE CHANGE
+     ↓
+GITHUB
+     ↓
+CI
+     ↓
+TESTS + VALIDATION
+     ↓
+PASS / FIX
 ```
 
 CI workflow:
@@ -923,9 +891,11 @@ AquaVigil/
 
 # Architecture Documentation
 
-The README intentionally presents only the architecture views needed to understand AquaVigil quickly.
+The README intentionally uses **large and simplified architecture views**.
 
-The full architecture documentation contains **20 detailed views**:
+Detailed engineering architecture is kept separately so the README remains readable.
+
+The full architecture documentation contains 20 technical views:
 
 |  # | Architecture View                      |
 | -: | -------------------------------------- |
@@ -950,7 +920,7 @@ The full architecture documentation contains **20 detailed views**:
 | 19 | Conceptual Water-Process Context       |
 | 20 | Human Decision Architecture            |
 
-Full architecture:
+Full technical architecture:
 
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
@@ -976,18 +946,18 @@ Architecture catalog:
 
 # Security & Safety Boundary
 
-> ### 🛡️ AquaVigil is a defensive, read-only educational demonstrator.
+> ### 🛡️ Defensive by Design
 >
-> All bundled demonstration evidence is synthetic.
+> AquaVigil is a **read-only educational defensive demonstrator**.
 >
-> AquaVigil has no industrial-control authority.
+> Bundled demonstration evidence is synthetic.
+>
+> **AquaVigil has no industrial-control authority.**
 
-The system's boundary is:
+The complete boundary can be summarized as:
 
 ```text
-Observe
-   ↓
-Validate
+Evidence
    ↓
 Analyze
    ↓
@@ -998,9 +968,11 @@ Explain
 Report
    ↓
 Human Review
+   ↓
+STOP
 ```
 
-## AquaVigil is designed around
+### Designed for
 
 ```text
 ✓ Passive evidence
@@ -1010,13 +982,13 @@ Human Review
 ✓ Defensive OT analysis
 ✓ Cyber-process correlation
 ✓ Explainable findings
-✓ Human authority
 ✓ Auditability
 ✓ Defensive monitoring
+✓ Human authority
 ✓ Synthetic demonstrations
 ```
 
-## Intentionally excluded
+### Intentionally excluded
 
 ```text
 ✗ PLC manipulation
@@ -1033,11 +1005,9 @@ Human Review
 
 **Human authority remains the final decision boundary.**
 
-See:
+For the complete safe-use model, see:
 
 [`docs/SECURITY.md`](docs/SECURITY.md)
-
-for the complete safe-use model.
 
 ---
 
@@ -1054,7 +1024,13 @@ Evidence-oriented mappings may relate to areas such as:
 
 > **Framework mapping does not mean certification.**
 
-AquaVigil does not certify regulatory compliance, laboratory validity, engineering approval, or the safety/security state of a real utility.
+AquaVigil does not certify:
+
+* regulatory compliance;
+* laboratory validity;
+* engineering approval;
+* the safety of a real utility;
+* the security state of a real utility.
 
 Real-world decisions remain the responsibility of qualified organizations and authorized personnel.
 
@@ -1071,23 +1047,19 @@ AI tools assisted with portions of:
 * interface development;
 * original visual development.
 
-AquaVigil is designed so that analytical behavior remains inspectable where supported.
-
-The platform emphasizes:
+AquaVigil emphasizes:
 
 ```text
-Deterministic Conditions
-        +
+Evidence
+   +
 Visible Analytical Methods
-        +
-Evidence Provenance
-        +
+   +
+Provenance
+   +
 Correlation Logic
-        +
-Observed Evidence
-        +
+   +
 Expected Conditions
-        ↓
+   ↓
 Explainable Decision Support
 ```
 
@@ -1099,28 +1071,21 @@ AI-assisted analysis does not replace human authority.
 
 # Demonstration Path
 
-For an academic or technical demonstration:
+A simple technical or academic demonstration can follow this sequence:
 
-1. Introduce AquaVigil and its read-only boundary.
+1. Introduce AquaVigil and the read-only safety boundary.
 2. Explain the evidence-to-decision workflow.
 3. Open **Analyze Evidence**.
 4. Select a bundled synthetic scenario.
 5. Upload the evidence.
-6. Review evidence-type detection.
-7. Review SHA-256 provenance.
-8. Inspect process observations.
-9. Review explainable findings.
-10. Open **Water Quality**.
-11. Review **Desalination**.
-12. Inspect **Asset Health**.
-13. Open **OT / SCADA Security**.
-14. Review the **Threat Center**.
-15. Inspect **Zeek / Suricata** evidence.
-16. Generate the professional report.
-17. Review standards-related evidence.
-18. Open **Prometheus**.
-19. Open **Grafana**.
-20. Finish with the passive-monitoring and human-authority boundaries.
+6. Review evidence-type detection and SHA-256 provenance.
+7. Inspect process observations and explainable findings.
+8. Review **Water Quality**, **Desalination**, and **Asset Health**.
+9. Open **OT / SCADA Security** and **Threat Center**.
+10. Inspect **Zeek / Suricata** evidence.
+11. Generate and review the professional report.
+12. Open **Prometheus** and **Grafana**.
+13. Finish with the passive-monitoring and human-authority boundary.
 
 ---
 
@@ -1141,7 +1106,7 @@ Its output is not:
 ✗ A safety-system controller
 ```
 
-A real-world deployment would require a separately engineered and authorized architecture including areas such as:
+A production deployment would require a separately engineered and authorized architecture involving areas such as:
 
 * authenticated access;
 * identity and RBAC;
@@ -1206,7 +1171,7 @@ See [`LICENSE`](LICENSE).
 ---
 
 <p align="center">
-  <img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil Logo" width="110">
+  <img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil Logo" width="120">
 </p>
 
 <h2 align="center">💧 AquaVigil</h2>
@@ -1220,7 +1185,7 @@ See [`LICENSE`](LICENSE).
 </p>
 
 <p align="center">
-  <strong>Observe → Validate → Analyze → Correlate → Explain → Report → Human Review</strong>
+  <strong>Evidence → Analyze → Correlate → Explain → Human Review</strong>
 </p>
 
 <p align="center">
