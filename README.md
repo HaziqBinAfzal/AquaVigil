@@ -1490,5 +1490,45 @@ See [`LICENSE`](LICENSE).
 </p>
 
 <p align="center">
-  <strong>v1.0.0</strong>
+  <strong>Exam-enhanced offline demonstration</strong>
 </p>
+
+## Exam-enhanced demonstration additions
+
+> [!IMPORTANT]
+> AquaVigil still processes synthetic or safely exported evidence. The optional MQTT stream is generated locally. Nothing in this package connects to plant PLCs, SCADA, pumps, valves, dosing equipment, or a public-health authority.
+
+### Visible Windows startup
+
+Double-click `OPEN-AQUAVIGIL.vbs` or `START-AQUAVIGIL.cmd`. Both now open a visible PowerShell terminal with the AquaVigil banner, six startup stages, service addresses, Docker status and live service logs. The browser opens after the application passes its health check. Pressing **Ctrl+C** ends the log view; use `STOP-AQUAVIGIL.cmd` to stop the containers. Analyses survive a restart because the default no longer resets SQLite and startup no longer removes volumes.
+
+### Optional local sensor simulation
+
+For synthetic sensor publishing and InfluxDB time-series storage, edit `.env` before launching:
+
+```dotenv
+MQTT_ENABLED=1
+INFLUXDB_ENABLED=1
+INFLUXDB_TOKEN=replace-with-a-local-demo-token
+INFLUXDB_PASSWORD=replace-with-a-local-demo-password
+```
+
+The launcher activates the `simulator` Docker Compose profile. The publisher sends JSON readings on the **internal-only** MQTT topic `aquavigil/demo/water` every 10 seconds. A clearly labeled exercise excursion occurs every twentieth reading. AquaVigil retains each accepted synthetic sample, updates Prometheus metrics and optionally mirrors sensor values into InfluxDB. Grafana provisions an additional optional InfluxDB time-series panel. The MQTT broker has no host port published; these demo credentials must be replaced before running on any shared machine. Keep `MQTT_ENABLED=0` for upload-only operation. This is not calibrated real-time water monitoring.
+
+### Synthetic ML model
+
+The packaged `app/models/quality-synthetic-v1.joblib` is trained with scikit-learn on generated, labeled examples. `app/models/evaluation.json` records the separate generated holdout evaluation. Inspect both the dataset limitation and the model version before discussing results. When all six quality inputs are present, the analysis page reports the model's screening count. A flagged record requests human investigation; it does not confirm contamination. Rebuild deterministically with `python scripts/train_quality_model.py`. The fouling indicator and estimated energy remain heuristic; estimated daily volume is average uploaded flow multiplied by 24, not a trained demand forecast. With 12 or more ordered flow records, a separate next-record flow projection displays its chronological holdout error. This short-horizon estimate is not a distribution-network optimization.
+
+### Audit, advisory and release evidence
+
+- Export **Audit JSON** and a clearly marked **unsent notification draft** from a report. A qualified person decides whether an event is reportable and who receives it.
+- `data/water_sector_advisories.json` is a versioned **local synthetic** indicator set. Matched entries retain their source and publication date; no external feed is claimed.
+- WHO, EPA and NIST mappings identify demonstrable evidence areas. The local jurisdiction is explicitly **not evidenced** until its authority and requirements are configured. These rows never constitute certification.
+- CI runs application tests, Python compilation, Bandit, `pip-audit` and a container build. `scripts/create_release_manifest.py` records candidate artifact hashes and required human approval. It does not sign, approve or deploy to an OT environment.
+- The SQLite volume now persists by default. To intentionally erase all local records, stop the application and separately run `docker compose down --volumes` after making a backup.
+
+**Deployment boundary:** Real Zeek/Suricata sensors, an industrial DMZ, OpenSCADA integration, regulated notification, asset patching and operating optimization require authorized infrastructure, calibration, safety validation and human change control. Their presence in a design diagram does not mean they are installed by this demo.
+
+### Finding the additions on the website
+
+After restarting from this updated ZIP, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.

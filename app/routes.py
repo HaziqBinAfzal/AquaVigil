@@ -14,6 +14,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from .db import delete_analysis, get_analysis, get_db, list_analyses, save_analysis
 from .metrics import observe
 from .services.analyzer import analyze, digest
+from .services.assurance import notification_draft
 
 bp = Blueprint("main", __name__)
 
@@ -60,6 +61,8 @@ def globals_for_templates():
         "product_name": "AquaVigil",
         "prometheus_url": os.getenv("PROMETHEUS_PUBLIC_URL", "http://localhost:9090"),
         "grafana_url": os.getenv("GRAFANA_PUBLIC_URL", "http://localhost:3000"),
+        "simulator_configured": os.getenv("MQTT_ENABLED", "0") == "1",
+        "influx_configured": os.getenv("INFLUXDB_ENABLED", "0") == "1",
     }
 
 
@@ -154,6 +157,30 @@ def download_report(analysis_id):
     return Response(html, headers={"Content-Disposition": f"attachment; filename=aquavigil-report-{analysis_id}.html"}, mimetype="text/html")
 
 
+@bp.get("/report/<int:analysis_id>/notification-draft")
+def download_notification_draft(analysis_id):
+    item = get_analysis(analysis_id)
+    if not item:
+        abort(404)
+    payload = json.dumps(notification_draft(item), indent=2)
+    return Response(payload, headers={"Content-Disposition": f"attachment; filename=notification-DRAFT-{analysis_id}.json"},
+                    mimetype="application/json")
+
+
+@bp.get("/report/<int:analysis_id>/audit-record")
+def download_audit_record(analysis_id):
+    item = get_analysis(analysis_id)
+    if not item:
+        abort(404)
+    payload = json.dumps({"id": item["id"], "created_at_utc": item["created_at"],
+                          "filename": item["filename"], "source_sha256": item["sha256"],
+                          "status": item["status"], "findings": item["result"]["findings"],
+                          "standards_evidence": item["result"].get("standards_evidence", []),
+                          "advisory_matches": item["result"].get("advisory_matches", [])}, indent=2)
+    return Response(payload, headers={"Content-Disposition": f"attachment; filename=audit-record-{analysis_id}.json"},
+                    mimetype="application/json")
+
+
 @bp.post("/report/<int:analysis_id>/delete")
 def delete_report(analysis_id):
     if not delete_analysis(analysis_id):
@@ -178,7 +205,7 @@ def workspace(section):
     # A network-log analysis must not hide previously analyzed process signals.
     if section == "quality":
         latest = _latest_for_workspace("quality", {"ph", "turbidity", "chlorine", "temperature"}) or latest
-    elif section == "desalination":
+    elif section in ("desalination", "optimization", "assets"):
         latest = _latest_for_workspace("desalination", {"pressure", "flow"}) or latest
     scan_results, scan_generated_at = None, None
     if section == "devsecops":

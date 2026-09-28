@@ -19,6 +19,14 @@ jobs:
       - run: python -m compileall -q app
       - run: bandit -q -r app
       - run: pip-audit -r requirements.txt
+      - run: python scripts/train_quality_model.py
+      - run: python scripts/create_release_manifest.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aquavigil-review-evidence
+          path: |
+            app/models/evaluation.json
+            release-candidate-manifest.json
   container:
     runs-on: ubuntu-latest
     steps:

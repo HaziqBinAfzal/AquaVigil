@@ -1,0 +1,26 @@
+{% if r and section=='quality' %}
+<section class="new-capability" aria-label="Synthetic quality model result">
+  <div class="new-capability-heading"><span>MODEL EVIDENCE</span><h2>Quality pattern screening</h2><p>The versioned model was trained and evaluated on generated examples. Its result calls for review and cannot confirm contamination.</p></div>
+  <div class="new-capability-grid two">
+    <article><b>Model version</b><strong>{{ r.ml_quality.model if r.ml_quality else 'Unavailable for this analysis' }}</strong><small>Synthetic scikit-learn classifier with a separate synthetic holdout set.</small></article>
+    <article><b>Evidence screened</b><strong>{{ r.ml_quality.evaluated if r.ml_quality else 0 }} records · {{ r.ml_quality.flagged if r.ml_quality else 0 }} flagged</strong><small>All six quality inputs are required for each screened record.</small><a href="{{ url_for('main.analysis',analysis_id=latest.id) }}">Examine the findings ↗</a></article>
+  </div>
+</section>
+{% elif r and section in ['optimization','assets'] %}
+<section class="new-capability" aria-label="Projection quality">
+  <div class="new-capability-heading"><span>ESTIMATE TRANSPARENCY</span><h2>Know what the resource numbers mean</h2><p>Fouling and energy are demonstration indicators. Daily volume is mean flow multiplied by 24, not a trained demand forecast.</p></div>
+  {% if r.optimization.flow_projection and r.optimization.flow_projection.available %}
+  <div class="new-capability-grid two"><article><b>Next-record flow projection</b><strong>{{ r.optimization.flow_projection.projected_next_flow_m3_h }} m³/h</strong><small>Ordered evidence series; one record ahead.</small></article><article><b>Chronological holdout error</b><strong>{{ r.optimization.flow_projection.holdout_mae_m3_h }} m³/h</strong><small>Mean absolute error across {{ r.optimization.flow_projection.holdout_records }} later records. Validate sampling intervals before use.</small></article></div>
+  {% else %}<p class="new-capability-note">A projection appears after 12 or more ordered flow readings. Current indicators remain estimates.</p>{% endif %}
+</section>
+{% elif r and section=='threats' %}
+<section class="new-capability" aria-label="Local advisory matching">
+  <div class="new-capability-heading"><span>LOCAL ADVISORY MATCHING</span><h2>Check the source behind a matching indicator</h2><p>The included indicators are synthetic exercises. There is no external intelligence feed or automatic containment.</p></div>
+  {% if r.advisory_matches %}<div class="new-capability-grid two">{% for match in r.advisory_matches[:4] %}<article><b>{{ match.advisory_id }} · record {{ match.row }}</b><strong>{{ match.observed }}</strong><small>{{ match.source }} · {{ match.published }}</small><p>{{ match.action }}</p></article>{% endfor %}</div>{% else %}<p class="new-capability-note">No synthetic advisory indicator matched the latest evidence. Try the included Suricata sample to see an example.</p>{% endif %}
+</section>
+{% elif r and section=='compliance' %}
+<section class="new-capability" aria-label="Audit and draft reporting">
+  <div class="new-capability-heading"><span>REVIEW AND EXPORT</span><h2>Keep the evidence; prepare a human-reviewed response</h2><p>These records support review. They do not certify compliance or send a public-health notification.</p></div>
+  <div class="new-capability-grid two"><article><b>Audit record</b><strong>Source hash and findings</strong><small>Download the analyzed file identity, reasoning, advisory matches and standards evidence.</small><a href="{{ url_for('main.download_audit_record',analysis_id=latest.id) }}">Download audit JSON ↗</a></article><article><b>Public-health reporting</b><strong>Unsent draft</strong><small>Verification, recipient and reporting duty must be decided by authorized people.</small><a href="{{ url_for('main.download_notification_draft',analysis_id=latest.id) }}">Download draft JSON ↗</a></article></div>
+</section>
+{% endif %}

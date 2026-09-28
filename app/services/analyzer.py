@@ -190,8 +190,24 @@ def analyze(payload, filename):
                "sources": 0, "destinations": 0, "protocols": []}
     if water_records:
         invalid = _water_analysis(water_records, findings, series)
+    ml = {"model": "synthetic-v1", "evaluated": 0, "flagged": 0,
+          "note": "All six quality features are required for optional synthetic classification."}
+    if water_records:
+        from .ml_quality import assess
+        ml = assess(water_records)
+        if ml["flagged"] and not any(f["domain"] == "Water quality" for f in findings):
+            findings.append(_finding(
+                "Synthetic ML screening", "warning", "Quality pattern flagged for review",
+                f"{ml['flagged']} of {ml['evaluated']} complete records crossed the 0.80 synthetic-model screening threshold.",
+                "The trained demonstration model is for synthetic evidence only; confirm every finding with independent sampling.",
+                "Versioned scikit-learn model trained on generated records with a separate synthetic holdout set.",
+                "An unusual combination may merit review but is not proof of contamination.",
+                "Validate sensor calibration and laboratory evidence before any operational decision.",
+                "AquaVigil synthetic ML v1"))
     if network_records:
         network = _network_analysis(network_records, network_source, findings)
+    from .assurance import advisory_matches, evidence_map
+    advisories = advisory_matches(network_records) if network_records else []
 
     pressures = [_number(row, "pressure") for row in records]
     pressures = [value for value in pressures if value is not None]
@@ -201,7 +217,10 @@ def analyze(payload, filename):
     energy = round(min(6.5, 2.7 + fouling * 0.018), 2)
     flow_values = [_number(row, "flow") for row in records]
     flow_values = [value for value in flow_values if value is not None]
-    demand = round(statistics.fmean(flow_values) * 24) if flow_values else 0
+    daily_volume = round(statistics.fmean(flow_values) * 24) if flow_values else 0
+    from .trends import next_flow_projection
+    flow_projection = next_flow_projection(flow_values)
+    pressure_trend = round((pressures[-1] - pressures[0]) / (len(pressures)-1), 2) if len(pressures) >= 12 else None
     risk = min(100, sum(32 if finding["severity"] == "critical" else 14 for finding in findings) + min(15, invalid))
     status = "Critical" if risk >= 60 else "Attention" if risk >= 25 else "Stable"
     expected = len(water_records) * len(LIMITS) if water_records else len(network_records) * 4
@@ -209,27 +228,30 @@ def analyze(payload, filename):
     tools = ["AquaVigil validation engine", "Explainable baseline engine"]
     if network_source and network_source.startswith("Zeek"): tools.append("Zeek log adapter")
     if network_source and network_source.startswith("Suricata"): tools.append("Suricata EVE adapter")
-    return {
+    result = {
         "status": status, "risk_score": risk, "record_count": len(records), "invalid_values": invalid,
         "sensor_confidence": confidence, "source_type": source_type, "tools": tools,
-        "series": series, "findings": findings, "network": network,
+        "series": series, "findings": findings, "network": network, "ml_quality": ml,
+        "advisory_matches": advisories,
         "summary": {"headline": f"{status} evidence state with {len(findings)} explainable finding(s)",
                     "what_was_analyzed": f"{len(records)} {source_type.lower()} record(s) were parsed, validated, and correlated.",
                     "how_it_worked": "AquaVigil used deterministic operating limits, an explainable recent-baseline model, authorization checks, and network-event context. No opaque score is used without supporting evidence.",
                     "next_action": "Review the evidence details and use approved operating, laboratory, and incident-response procedures before any real-world action." if findings else "Continue evidence collection and trend monitoring; no mapped anomaly was found."},
         "optimization": {"membrane_fouling_risk": fouling, "specific_energy_kwh_m3": energy,
-                         "demand_forecast_m3": demand,
+                         "demand_forecast_m3": daily_volume, "estimated_daily_volume_m3": daily_volume,
+                         "pressure_trend_per_sample_bar": pressure_trend,
+                         "flow_projection": flow_projection,
                          "recommendation": "Schedule a supervised membrane inspection and review normalized pressure/flow trends." if fouling > 55 else "Continue trend monitoring within approved engineering limits.",
                          "authority": "Decision support only—engineering limits, laboratory evidence, and operator approval remain authoritative.",
                          "explanation": f"Fouling risk combines the pressure factor ({pressure_factor:.1f}) with quality/anomaly evidence ({quality_factor} points); energy rises with calculated fouling risk."},
         "incident_flow": ["Detect", "Validate", "Correlate", "Prioritize", "Respond", "Recover"],
-        "compliance": [
-            {"framework": "WHO Water Safety Plan", "control": "Operational monitoring", "state": "Evidence available" if series else "Not evidenced", "evidence": f"{len(series)} validated water/process signal(s)"},
-            {"framework": "NIST SP 800-82 Rev. 3", "control": "OT monitoring and segmentation", "state": "Evidence available" if network["events"] else "Architecture mapping", "evidence": f"{network['events']} passive network event(s); read-only architecture"},
-            {"framework": "EPA Guidelines", "control": "Detection, response, and public-health protection", "state": "Evidence available", "evidence": f"{len(findings)} documented finding(s) with safe response guidance"},
-            {"framework": "National water safety regulations", "control": "Certification evidence and regulatory inspection audit trail", "state": "Evidence available" if series else "Not evidenced", "evidence": f"{len(series)} validated water/process signal(s); retained analysis report"},
-        ],
+        "compliance": [],
     }
+    result["standards_evidence"] = evidence_map(result)
+    result["compliance"] = [{"framework": row["framework"], "control": row["area"],
+                             "state": "Evidence available" if row["evidenced"] else "Not evidenced",
+                             "evidence": row["evidence"]} for row in result["standards_evidence"]]
+    return result
 
 
 def digest(payload):

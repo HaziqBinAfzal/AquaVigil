@@ -1,0 +1,9 @@
+<section class="new-capability" aria-label="Evidence and sensor simulation status">
+  <div class="new-capability-heading"><span>DATA PATHS</span><h2>Where these monitoring values come from</h2><p>The monitoring stack shows results from uploaded evidence. A separate synthetic MQTT stream is available when enabled locally.</p></div>
+  <div class="new-capability-grid">
+    <article><b>Uploaded evidence</b><strong>{{ latest.filename if latest else 'Awaiting analysis' }}</strong><small>{{ r.record_count ~ ' records · ' ~ r.status if r else 'Run a sample or upload a file to populate metrics.' }}</small><a href="{{ url_for('main.upload') }}">Analyze evidence ↗</a></article>
+    <article><b>MQTT simulator</b><strong>{{ 'Configured on' if simulator_configured else 'Configured off' }}</strong><small>Locally generated readings only; no plant sensors or controllers. Enable in <code>.env</code>.</small><a href="{{ url_for('main.workspace',section='quality') }}">See quality readings ↗</a></article>
+    <article><b>InfluxDB time series</b><strong>{{ 'Configured on' if influx_configured else 'Configured off' }}</strong><small>Optional store for synthetic sensor records. Prometheus remains the source for app metrics.</small><a href="{{ grafana_url }}" target="_blank" rel="noopener">Open Grafana ↗</a></article>
+  </div>
+  <p class="new-capability-note">Configured on means the option was selected; use the service logs and dashboard to verify that its containers are healthy.</p>
+</section>

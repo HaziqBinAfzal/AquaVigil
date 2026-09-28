@@ -1,0 +1,59 @@
+{
+  "status": "CANDIDATE \u2014 NOT APPROVED FOR OT DEPLOYMENT",
+  "created_at_utc": "2026-09-28T08:38:04.445963+00:00",
+  "checks": [
+    "pytest",
+    "compileall",
+    "bandit",
+    "pip-audit",
+    "container build"
+  ],
+  "operator_approval": "REQUIRED; not recorded by this script",
+  "rollback": "Use the previous reviewed image and restore the retained database volume under change control",
+  "artifacts": {
+    "requirements.txt": {
+      "sha256": "939f7d265c08dea813d60dbb350c3b7b8c1488837ae9f0ccad970ef514e12a00",
+      "bytes": 176
+    },
+    "Dockerfile": {
+      "sha256": "4d26a008b36dab9f5f4498830c821746d9640a19bae7b2fe67211b777a5472c4",
+      "bytes": 297
+    },
+    "docker-compose.yml": {
+      "sha256": "79bf29c4e0a750b911aa94cc5bd80bc14eda8b10745de8e20325ff29c81c5377",
+      "bytes": 2777
+    },
+    "app/services/analyzer.py": {
+      "sha256": "a6d699aa2cfc2a6aad29ff0858a76643019282e3f0110d0ad6438d9409913ed0",
+      "bytes": 15964
+    },
+    "app/models/quality-synthetic-v1.joblib": {
+      "sha256": "80ed3555a1d7ac8152a423d9929be2970aa21fb5682e5a34d1d15e11807613bb",
+      "bytes": 230358
+    },
+    "app/models/evaluation.json": {
+      "sha256": "b523e7bf2f8584dd472f3f607e1d0fb0562db6101db9ea4772c15b024efbc80e",
+      "bytes": 549
+    },
+    "app/templates/dashboard.html": {
+      "sha256": "ae5ef927768d517184c2d696fa53dbf7f9819599092b07a750a691ddd3e91980",
+      "bytes": 3986
+    },
+    "app/templates/workspace.html": {
+      "sha256": "92e7bd2b42e95f6c242acb2d83b7f8ce5cd55b328f5f22d62b6bd4ee09f48860",
+      "bytes": 20930
+    },
+    "app/templates/_monitoring_new.html": {
+      "sha256": "692ceac777cd71fdff223ecd39404ba79318071239889789abd6668cd0e0d104",
+      "bytes": 1502
+    },
+    "app/templates/_workspace_new.html": {
+      "sha256": "e648145a4ec5ef9cec9d1caae2f58b0efec18b4825bef7cd7ca651a0c85460f8",
+      "bytes": 3983
+    },
+    "app/static/css/live.css": {
+      "sha256": "5688d2b5f1e4da21dc8dd6e3d6bb5972ddc78f95d9e08ff3508d0175b94d79f3",
+      "bytes": 20788
+    }
+  }
+}

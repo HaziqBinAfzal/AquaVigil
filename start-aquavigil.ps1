@@ -39,10 +39,19 @@ function Set-EnvValue {
     [System.IO.File]::WriteAllLines((Resolve-Path $Path), [string[]]$updated, $utf8NoBom)
 }
 
+$Host.UI.RawUI.WindowTitle = "AquaVigil | Water Security Operations"
+Clear-Host
+Write-Host "  ==============================================================" -ForegroundColor DarkCyan
+Write-Host "    A Q U A V I G I L        ~ ~ ~   [ SHIELD ]" -ForegroundColor Cyan
+Write-Host "    WATER SECURITY  /  DESALINATION  /  EVIDENCE MONITORING" -ForegroundColor White
+Write-Host "  ==============================================================" -ForegroundColor DarkCyan
+Write-Host "    READ-ONLY DEMONSTRATION  |  No plant control commands" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "AquaVigil Docker Launcher" -ForegroundColor Cyan
-Write-Host "Smart Water and Desalination Security Platform" -ForegroundColor DarkCyan
-Write-Host ""
+function Stage([int]$Number, [string]$Label) {
+    Write-Host ("  [{0}/6] {1}" -f $Number, $Label) -ForegroundColor Cyan
+}
+
+Stage 1 "Checking Docker engine"
 
 $dockerDesktop = Join-Path $env:ProgramFiles "Docker\Docker\Docker Desktop.exe"
 $dockerCliDir = Join-Path $env:ProgramFiles "Docker\Docker\resources\bin"
@@ -68,13 +77,25 @@ if (-not (Test-Path ".env")) {
     Write-Host "Created .env from .env.example." -ForegroundColor Green
 }
 
+Stage 2 "Reading settings and finding available ports"
 $config = Read-EnvFile ".env"
+# Upgrade earlier installations that still contain RESET_ON_START=1.
+# Intentional clearing remains a separate, explicit maintenance action.
+if ($config["AQUAVIGIL_RESET_ON_START"] -ne "0") {
+    Set-EnvValue ".env" "AQUAVIGIL_RESET_ON_START" "0"
+    Write-Host "  Analysis history preservation enabled for this installation." -ForegroundColor Green
+}
 $appPort = if ($config["APP_PORT"]) { [int]$config["APP_PORT"] } else { 8000 }
 $prometheusPort = if ($config["PROMETHEUS_PORT"]) { [int]$config["PROMETHEUS_PORT"] } else { 9090 }
 $grafanaPort = if ($config["GRAFANA_PORT"]) { [int]$config["GRAFANA_PORT"] } else { 3000 }
+$composeOptions = @()
+if ($config["MQTT_ENABLED"] -eq "1") {
+    $composeOptions = @("--profile", "simulator")
+    Write-Host "  Local synthetic MQTT and InfluxDB simulation enabled." -ForegroundColor Yellow
+}
 
-Write-Host "Clearing the previous demonstration session..." -ForegroundColor Cyan
-docker compose down --remove-orphans --volumes *> $null
+# Preserve the named volume and every stored analysis across restarts.
+docker compose @composeOptions down --remove-orphans *> $null
 $appPort = Get-AvailablePort $appPort "AquaVigil"
 $prometheusPort = Get-AvailablePort $prometheusPort "Prometheus"
 $grafanaPort = Get-AvailablePort $grafanaPort "Grafana"
@@ -82,18 +103,25 @@ Set-EnvValue ".env" "APP_PORT" $appPort
 Set-EnvValue ".env" "PROMETHEUS_PORT" $prometheusPort
 Set-EnvValue ".env" "GRAFANA_PORT" $grafanaPort
 
-Write-Host "Pulling required monitoring images..." -ForegroundColor Cyan
-docker compose pull prometheus grafana
-if ($LASTEXITCODE -ne 0) { throw "Docker could not download the monitoring images. Check the internet connection and retry." }
+Stage 3 "Checking monitoring images"
+docker image inspect prom/prometheus:v3.5.0 *> $null
+if ($LASTEXITCODE -ne 0) { docker compose pull prometheus; if ($LASTEXITCODE -ne 0) { throw "Prometheus image could not be downloaded." } }
+docker image inspect grafana/grafana:12.1.1 *> $null
+if ($LASTEXITCODE -ne 0) { docker compose pull grafana; if ($LASTEXITCODE -ne 0) { throw "Grafana image could not be downloaded." } }
+if ($composeOptions.Count -gt 0) {
+    docker compose @composeOptions pull mosquitto influxdb
+    if ($LASTEXITCODE -ne 0) { throw "Optional simulation images could not be downloaded." }
+}
 
-Write-Host "Building and starting AquaVigil..." -ForegroundColor Cyan
-docker compose up --build --force-recreate -d
+Stage 4 "Building application and starting services"
+docker compose @composeOptions up --build --force-recreate -d
 if ($LASTEXITCODE -ne 0) { throw "Docker Compose could not start AquaVigil." }
 
 $appUrl = "http://localhost:$appPort"
 $deadline = (Get-Date).AddMinutes(2)
 $ready = $false
-Write-Host "Waiting for the application health check" -NoNewline
+Stage 5 "Waiting for application health check"
+Write-Host "  AquaVigil" -NoNewline
 while ((Get-Date) -lt $deadline) {
     try {
         $health = Invoke-RestMethod -Uri "$appUrl/health" -TimeoutSec 3
@@ -109,9 +137,13 @@ if (-not $ready) {
     throw "AquaVigil did not become healthy within two minutes. Run docker compose logs aquavigil."
 }
 
-Write-Host "AquaVigil is ready." -ForegroundColor Green
-Write-Host "Application: $appUrl" -ForegroundColor White
-Write-Host "Prometheus: http://localhost:$prometheusPort" -ForegroundColor White
-Write-Host "Grafana: http://localhost:$grafanaPort  (admin / aquavigil)" -ForegroundColor White
+Stage 6 "Services ready"
+docker compose @composeOptions ps
+Write-Host "  APPLICATION   $appUrl" -ForegroundColor Green
+Write-Host "  PROMETHEUS    http://localhost:$prometheusPort" -ForegroundColor White
+Write-Host "  GRAFANA       http://localhost:$grafanaPort" -ForegroundColor White
 Write-Host ""
 Start-Process $appUrl
+Write-Host "  LIVE APPLICATION LOGS  |  Press Ctrl+C to stop viewing logs; services keep running." -ForegroundColor Cyan
+Write-Host "  Stop services using STOP-AQUAVIGIL.cmd when finished." -ForegroundColor DarkCyan
+docker compose @composeOptions logs --tail=30 -f

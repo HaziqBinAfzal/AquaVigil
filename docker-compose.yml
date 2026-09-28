@@ -5,7 +5,12 @@ services:
       PROMETHEUS_PUBLIC_URL: "http://localhost:${PROMETHEUS_PORT:-9090}"
       GRAFANA_PUBLIC_URL: "http://localhost:${GRAFANA_PORT:-3000}"
       AQUAVIGIL_SECRET_KEY: "${AQUAVIGIL_SECRET_KEY:-}"
-      AQUAVIGIL_RESET_ON_START: "${AQUAVIGIL_RESET_ON_START:-1}"
+      AQUAVIGIL_RESET_ON_START: "${AQUAVIGIL_RESET_ON_START:-0}"
+      MQTT_ENABLED: "${MQTT_ENABLED:-0}"
+      INFLUXDB_ENABLED: "${INFLUXDB_ENABLED:-0}"
+      MQTT_HOST: mosquitto
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: "${INFLUXDB_TOKEN:-aquavigil-demo-token-change-me}"
     ports: ["${APP_PORT:-8000}:5000"]
     volumes: ["aquavigil-data:/app/instance"]
     healthcheck:
@@ -28,6 +33,7 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: aquavigil
       GF_USERS_ALLOW_SIGN_UP: "false"
+      AQUAVIGIL_INFLUX_TOKEN: "${INFLUXDB_TOKEN:-aquavigil-demo-token-change-me}"
     volumes:
       - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
@@ -39,5 +45,30 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    profiles: [simulator]
+    volumes: ["./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"]
+    restart: unless-stopped
+  sensor-simulator:
+    build: .
+    profiles: [simulator]
+    command: ["python", "scripts/publish_sensors.py"]
+    environment: {MQTT_HOST: mosquitto}
+    depends_on: [mosquitto]
+    restart: unless-stopped
+  influxdb:
+    image: influxdb:2.7
+    profiles: [simulator]
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: "${INFLUXDB_PASSWORD:-change-this-demo-password}"
+      DOCKER_INFLUXDB_INIT_ORG: aquavigil-demo
+      DOCKER_INFLUXDB_INIT_BUCKET: sensors
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "${INFLUXDB_TOKEN:-aquavigil-demo-token-change-me}"
+    volumes: ["influxdb-data:/var/lib/influxdb2"]
+    restart: unless-stopped
 volumes:
   aquavigil-data:
+  influxdb-data:

@@ -19,4 +19,7 @@ def create_app(test_config=None):
         app.config.update(test_config)
     app.register_blueprint(bp)
     init_db(app, reset=app.config["RESET_ON_START"] and not test_config)
+    if not test_config:
+        from .services.simulator import start
+        start(app)
     return app

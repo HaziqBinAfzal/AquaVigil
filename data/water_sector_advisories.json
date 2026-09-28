@@ -1,0 +1,8 @@
+{
+  "source": "AquaVigil LOCAL SYNTHETIC demonstration indicators; not an external threat-intelligence feed",
+  "published": "2026-09-28",
+  "indicators": [
+    {"id": "DEMO-ICS-001", "field": "alert.signature", "match": "Unauthorized Modbus Write", "action": "Review command authorization and controller change record"},
+    {"id": "DEMO-OT-002", "field": "service", "match": "modbus", "action": "Verify source, destination and approved OT conduit"}
+  ]
+}

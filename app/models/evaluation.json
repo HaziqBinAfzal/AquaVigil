@@ -1,0 +1,27 @@
+{
+  "dataset": "generated synthetic samples, seed 133; no field calibration",
+  "features": [
+    "ph",
+    "conductivity",
+    "turbidity",
+    "chlorine",
+    "salinity",
+    "temperature"
+  ],
+  "training_samples": 900,
+  "holdout_samples": 300,
+  "confusion_matrix": [
+    [
+      146,
+      4
+    ],
+    [
+      0,
+      150
+    ]
+  ],
+  "holdout_precision": 0.974,
+  "holdout_recall": 1.0,
+  "holdout_f1": 0.987,
+  "limitations": "Generated normal and injected excursion patterns; not validated for contamination or actual plant conditions."
+}
