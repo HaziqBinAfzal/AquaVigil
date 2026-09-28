@@ -26,10 +26,13 @@
 </p>
 
 <p align="center">
-  <strong>v1.0.0 · Educational Defensive Prototype · Human-in-the-Loop</strong>
+  <strong>Educational Defensive Prototype · Human-in-the-Loop</strong>
 </p>
 
 ---
+
+> [!IMPORTANT]
+> **For the current exam demonstration, use [`main`](https://github.com/HaziqBinAfzal/AquaVigil/archive/refs/heads/main.zip).** The published `v1.0.0` release tag points to an earlier snapshot and does not contain the later monitoring, model, audit, launcher and documentation updates. On GitHub, select **Code → Download ZIP** while viewing `main`, or use the clone command below.
 
 ## Overview
 
@@ -961,7 +964,7 @@ Install:
 * Windows 10/11;
 * a modern browser.
 
-Clone AquaVigil:
+Clone the current `main` branch of AquaVigil:
 
 ```bash
 git clone https://github.com/HaziqBinAfzal/AquaVigil.git
