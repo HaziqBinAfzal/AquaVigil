@@ -32,7 +32,7 @@
 ---
 
 > [!IMPORTANT]
-> **For the current exam demonstration, use [`main`](https://github.com/HaziqBinAfzal/AquaVigil/archive/refs/heads/main.zip).** The published `v1.0.0` release tag points to an earlier snapshot and does not contain the later monitoring, model, audit, launcher and documentation updates. On GitHub, select **Code → Download ZIP** while viewing `main`, or use the clone command below.
+> **For the current exam demonstration, open the [v1.0.0 release](https://github.com/HaziqBinAfzal/AquaVigil/releases/tag/v1.0.0) and download `AquaVigil-v1.0.0-Updated-20260928.zip` under Assets.** You can also [download the latest `main` ZIP](https://github.com/HaziqBinAfzal/AquaVigil/archive/refs/heads/main.zip) or use the clone command below. The original `v1.0.0` Git tag still points to the older snapshot, so GitHub's automatic **Source code** ZIP and tar.gz for that tag do not include the exam updates.
 
 ## Overview
 
