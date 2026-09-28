@@ -2,7 +2,7 @@
   <img src="app/static/img/aquavigil-logo.svg" alt="AquaVigil Logo" width="210">
 </p>
 
-<h1 align="center">💧 AquaVigil</h1>
+<h1 align="center">AquaVigil</h1>
 
 <h3 align="center">Smart Water & Desalination Infrastructure Security Platform</h3>
 
@@ -57,22 +57,36 @@ AquaVigil ends at **analysis, explanation, reporting, and human review**.
 
 It does **not** control industrial infrastructure.
 
+> [!CAUTION]
+> **Safety boundary:** AquaVigil is a read-only educational demonstrator. Bundled scenarios and the optional MQTT sensor stream are synthetic. It has no authority to operate PLCs, SCADA, pumps, valves, dosing equipment, or safety systems. Findings and notification drafts require qualified human review.
+
+## Topic 133 at a Glance
+
+| Question | AquaVigil's answer |
+| --- | --- |
+| **Purpose** | Bring water-quality, desalination, asset, and OT evidence together so an operator can examine possible public-health and operational consequences. |
+| **Method** | Validate uploaded CSV/JSON/JSONL or optional simulated MQTT readings; retain provenance; analyze signals; correlate process and cyber evidence; explain findings in a report. |
+| **Outcome** | A traceable investigation with Prometheus/Grafana visibility, audit export, and a human decision boundary. No automated treatment or regulator action occurs. |
+
+This repository demonstrates the **analysis and monitoring** part of a proposed smart water and desalination security platform. The [requirement matrix](docs/REQUIREMENT_MATRIX.md) separates implemented evidence from the infrastructure and validation needed at a real utility.
+
 ---
 
 ## Navigation
 
-[Why AquaVigil](#why-aquavigil) ·
-[Core Capabilities](#core-capabilities) ·
-[Evidence Workflow](#evidence-processing-architecture) ·
-[Architecture](#platform-architecture) ·
-[Intelligence Domains](#intelligence-domains) ·
-[Correlation](#cyber-process-correlation) ·
-[Workspaces](#platform-workspaces) ·
-[Safety](#otscada-defensive-architecture) ·
-[Observability](#docker--observability-architecture) ·
+[Purpose](#topic-133-at-a-glance) ·
+[Capabilities](#core-capabilities) ·
+[Evidence Flow](#evidence-processing-architecture) ·
+[Platform Architecture](#platform-architecture) ·
+[Water & OT Domains](#intelligence-domains) ·
+[Threat Correlation](#cyber-process-correlation) ·
+[Monitoring](#docker--observability-architecture) ·
+[Current Demo](#current-demonstration-features) ·
 [Quick Start](#quick-start) ·
-[Testing](#developer-setup--testing) ·
-[Documentation](#documentation)
+[Exam Alignment](#topic-133-requirement-map) ·
+[Demo Walkthrough](#demonstration-path) ·
+[Limits](#limitations) ·
+[Docs](#documentation)
 
 ---
 
@@ -147,32 +161,17 @@ AquaVigil is designed to help answer:
 
 # Core Capabilities
 
-| Capability                   |          Support         |
-| ---------------------------- | :----------------------: |
-| CSV evidence ingestion       |             ✅            |
-| JSON evidence ingestion      |             ✅            |
-| JSONL evidence ingestion     |             ✅            |
-| File validation              |             ✅            |
-| Evidence normalization       |             ✅            |
-| SHA-256 provenance           |             ✅            |
-| Evidence-type detection      |             ✅            |
-| Water-quality analysis       |             ✅            |
-| Desalination intelligence    |             ✅            |
-| Asset-health reasoning       |             ✅            |
-| Passive OT/SCADA analysis    |             ✅            |
-| Zeek-style network evidence  |             ✅            |
-| Suricata-style IDS evidence  |             ✅            |
-| Cyber-process correlation    |             ✅            |
-| Explainable findings         |             ✅            |
-| Professional reporting       |             ✅            |
-| Analysis/report history      |             ✅            |
-| Prometheus metrics           |             ✅            |
-| Grafana visualization        |             ✅            |
-| Docker Compose deployment    |             ✅            |
-| Automated testing            |             ✅            |
-| GitHub Actions CI            |             ✅            |
-| Dependency maintenance       |             ✅            |
+| Area | Running demonstration | Deployment boundary |
+| --- | --- | --- |
+| Evidence intake | CSV, JSON and JSONL validation, classification and SHA-256 fingerprints | An approved export path would be needed for production evidence. |
+| Water quality | Threshold and context checks plus a versioned **synthetic** scikit-learn screening model | Real contamination claims require calibrated instruments, laboratory verification and validation with field data. |
+| Desalination & assets | Fouling/energy indicators and a short-horizon flow projection where sufficient ordered samples exist | Plant optimization, predictive maintenance and distribution control are not deployed. |
+| OT/SCADA | Read-only analysis of Zeek-style, Suricata-style and process evidence; cyber-process correlation | No live Zeek/Suricata sensor, industrial DMZ or OpenSCADA connection is installed by this demo. |
+| Incident response | Explainable findings, prioritized review and an **unsent** public-health notification draft | Containment, notification and safe plant operation remain with authorized people. |
+| Monitoring | Prometheus and provisioned Grafana dashboards; optional local MQTT and InfluxDB simulation | These metrics and samples are demonstration telemetry, not certified water monitoring. |
+| Delivery & assurance | Pytest, Bandit, pip-audit, container build, release manifest, audit export and evidence-oriented standards mapping | No automated OT deployment, signed release, live regulatory database or compliance certification. |
 
+These statuses describe what runs in the repository today. The diagrams below also show conceptual trust boundaries for an authorized production design; a diagram alone does not create that infrastructure.
 
 ---
 
@@ -908,6 +907,48 @@ Password: aquavigil
 
 ---
 
+# Current Demonstration Features
+
+> [!IMPORTANT]
+> AquaVigil still processes synthetic or safely exported evidence. The optional MQTT stream is generated locally. Nothing in this package connects to plant PLCs, SCADA, pumps, valves, dosing equipment, or a public-health authority.
+
+### Visible Windows startup
+
+Double-click `OPEN-AQUAVIGIL.vbs` or `START-AQUAVIGIL.cmd`. Both now open a visible PowerShell terminal with the AquaVigil banner, six startup stages, service addresses, Docker status and live service logs. The browser opens after the application passes its health check. Pressing **Ctrl+C** ends the log view; use `STOP-AQUAVIGIL.cmd` to stop the containers. Analyses survive a restart because the default no longer resets SQLite and startup no longer removes volumes.
+
+### Optional local sensor simulation
+
+For synthetic sensor publishing and InfluxDB time-series storage, edit `.env` before launching:
+
+```dotenv
+MQTT_ENABLED=1
+INFLUXDB_ENABLED=1
+INFLUXDB_TOKEN=replace-with-a-local-demo-token
+INFLUXDB_PASSWORD=replace-with-a-local-demo-password
+```
+
+The launcher activates the `simulator` Docker Compose profile. The publisher sends JSON readings on the **internal-only** MQTT topic `aquavigil/demo/water` every 10 seconds. A clearly labeled exercise excursion occurs every twentieth reading. AquaVigil retains each accepted synthetic sample, updates Prometheus metrics and optionally mirrors sensor values into InfluxDB. Grafana provisions an additional optional InfluxDB time-series panel. The MQTT broker has no host port published; these demo credentials must be replaced before running on any shared machine. Keep `MQTT_ENABLED=0` for upload-only operation. This is not calibrated real-time water monitoring.
+
+### Synthetic ML model
+
+The packaged `app/models/quality-synthetic-v1.joblib` is trained with scikit-learn on generated, labeled examples. `app/models/evaluation.json` records the separate generated holdout evaluation. Inspect both the dataset limitation and the model version before discussing results. When all six quality inputs are present, the analysis page reports the model's screening count. A flagged record requests human investigation; it does not confirm contamination. Rebuild deterministically with `python scripts/train_quality_model.py`. The fouling indicator and estimated energy remain heuristic; estimated daily volume is average uploaded flow multiplied by 24, not a trained demand forecast. With 12 or more ordered flow records, a separate next-record flow projection displays its chronological holdout error. This short-horizon estimate is not a distribution-network optimization.
+
+### Audit, advisory and release evidence
+
+- Export **Audit JSON** and a clearly marked **unsent notification draft** from a report. A qualified person decides whether an event is reportable and who receives it.
+- `data/water_sector_advisories.json` is a versioned **local synthetic** indicator set. Matched entries retain their source and publication date; no external feed is claimed.
+- WHO, EPA and NIST mappings identify demonstrable evidence areas. The local jurisdiction is explicitly **not evidenced** until its authority and requirements are configured. These rows never constitute certification.
+- CI runs application tests, Python compilation, Bandit, `pip-audit` and a container build. `scripts/create_release_manifest.py` records candidate artifact hashes and required human approval. It does not sign, approve or deploy to an OT environment.
+- The SQLite volume now persists by default. To intentionally erase all local records, stop the application and separately run `docker compose down --volumes` after making a backup.
+
+**Deployment boundary:** Real Zeek/Suricata sensors, an industrial DMZ, OpenSCADA integration, regulated notification, asset patching and operating optimization require authorized infrastructure, calibration, safety validation and human change control. Their presence in a design diagram does not mean they are installed by this demo.
+
+### Finding the additions on the website
+
+After updating the current `main` branch and restarting, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.
+
+---
+
 # Quick Start
 
 ## Requirements
@@ -981,13 +1022,15 @@ Stop AquaVigil:
 docker compose down
 ```
 
-The v1.0.0 Compose deployment intentionally remains small:
+The default Compose deployment remains small:
 
 ```text
 AquaVigil
 Prometheus
 Grafana
 ```
+
+Optional MQTT/InfluxDB services start only when the local simulator is enabled, as described above.
 
 ---
 
@@ -1007,6 +1050,7 @@ data/
 | `membrane_fouling.csv`           | Desalination / membrane scenario |
 | `zeek_network_evidence.csv`      | Passive network evidence         |
 | `suricata_alerts.json`           | IDS-style event evidence         |
+| `water_sector_advisories.json`    | Local synthetic advisory set     |
 
 All bundled scenarios are **synthetic** and intended for safe education, demonstration, development, and testing.
 
@@ -1363,6 +1407,25 @@ AI-assisted analysis does not replace human authority.
 
 ---
 
+# Topic 133 Requirement Map
+
+The exam brief spans six learning-objective groups. The current repository gives a concrete demonstration of selected parts and names the remaining deployment work.
+
+| Topic area | Evidence you can show | What needs authorized deployment or validation |
+| --- | --- | --- |
+| Water treatment SCADA & OT security | Passive OT evidence analysis, dosing/process scenarios and a conceptual segmentation/DMZ blueprint | Real firewall rules, plant network segmentation, live SCADA/PLC integration and validated process-tampering detection. |
+| AI water quality & contamination | Quality checks, synthetic scikit-learn screening, reportable threshold findings and heuristic membrane-fouling indicators | Calibrated live sensors, field-trained model evaluation and validated contamination notification. |
+| Critical infrastructure threat response | Zeek/Suricata-style evidence ingestion, cyber-process correlation, local synthetic advisories and safe investigation steps | Live sensors, trusted sector threat feeds, automated containment and public-health incident procedures. |
+| Energy & resource optimization | Fouling/energy estimates and short-horizon next-record flow projection | Plant-constrained optimizer, validated pump/membrane maintenance forecasts and automated distribution-network optimization. |
+| DevSecOps | CI testing, security scanning, container build, release manifest and approval evidence | Signed artifacts, operational change authorization, patch orchestration and staged deployment into an approved OT environment. |
+| Compliance & reporting | Audit JSON, evidence mappings and an unsent notification draft | Jurisdiction-specific regulatory database, certified water-quality evidence and authorized reporting submission. |
+
+**Tool mapping:** Flask/Python hosts the demonstrator; scikit-learn powers synthetic quality screening; Prometheus and Grafana display application and optional simulated sensor metrics; MQTT and InfluxDB are optional local services. Zeek and Suricata **formats** are accepted as uploaded evidence. TensorFlow, live OpenSCADA, production Zeek/Suricata collection and regulatory integrations are not installed. WHO/EPA/NIST SP 800-82 references guide evidence discussion and do not assert compliance.
+
+For detailed per-objective status, see [`docs/REQUIREMENT_MATRIX.md`](docs/REQUIREMENT_MATRIX.md).
+
+---
+
 # Demonstration Path
 
 For an academic or technical demonstration:
@@ -1392,7 +1455,7 @@ For an academic or technical demonstration:
 
 # Limitations
 
-AquaVigil v1.0.0 is an **educational defensive prototype**.
+AquaVigil is an **educational defensive prototype**. The `v1.0.0` release tag predates additions on the current `main` branch.
 
 Its output is not:
 
@@ -1424,7 +1487,7 @@ A real-world deployment would require a separately engineered and authorized arc
 * independent safety and security review;
 * qualified operational personnel.
 
-These capabilities are outside the v1.0.0 educational prototype.
+These capabilities are outside the current educational demonstration.
 
 ---
 
@@ -1445,7 +1508,7 @@ License        MIT
 
 # Contributors
 
-### Haziq Afzal
+### Haziq Bin Afzal
 
 **Co-Founder, HR Presents**
 
@@ -1492,43 +1555,3 @@ See [`LICENSE`](LICENSE).
 <p align="center">
   <strong>v1.0.0</strong>
 </p>
-
-## Exam-enhanced demonstration additions
-
-> [!IMPORTANT]
-> AquaVigil still processes synthetic or safely exported evidence. The optional MQTT stream is generated locally. Nothing in this package connects to plant PLCs, SCADA, pumps, valves, dosing equipment, or a public-health authority.
-
-### Visible Windows startup
-
-Double-click `OPEN-AQUAVIGIL.vbs` or `START-AQUAVIGIL.cmd`. Both now open a visible PowerShell terminal with the AquaVigil banner, six startup stages, service addresses, Docker status and live service logs. The browser opens after the application passes its health check. Pressing **Ctrl+C** ends the log view; use `STOP-AQUAVIGIL.cmd` to stop the containers. Analyses survive a restart because the default no longer resets SQLite and startup no longer removes volumes.
-
-### Optional local sensor simulation
-
-For synthetic sensor publishing and InfluxDB time-series storage, edit `.env` before launching:
-
-```dotenv
-MQTT_ENABLED=1
-INFLUXDB_ENABLED=1
-INFLUXDB_TOKEN=replace-with-a-local-demo-token
-INFLUXDB_PASSWORD=replace-with-a-local-demo-password
-```
-
-The launcher activates the `simulator` Docker Compose profile. The publisher sends JSON readings on the **internal-only** MQTT topic `aquavigil/demo/water` every 10 seconds. A clearly labeled exercise excursion occurs every twentieth reading. AquaVigil retains each accepted synthetic sample, updates Prometheus metrics and optionally mirrors sensor values into InfluxDB. Grafana provisions an additional optional InfluxDB time-series panel. The MQTT broker has no host port published; these demo credentials must be replaced before running on any shared machine. Keep `MQTT_ENABLED=0` for upload-only operation. This is not calibrated real-time water monitoring.
-
-### Synthetic ML model
-
-The packaged `app/models/quality-synthetic-v1.joblib` is trained with scikit-learn on generated, labeled examples. `app/models/evaluation.json` records the separate generated holdout evaluation. Inspect both the dataset limitation and the model version before discussing results. When all six quality inputs are present, the analysis page reports the model's screening count. A flagged record requests human investigation; it does not confirm contamination. Rebuild deterministically with `python scripts/train_quality_model.py`. The fouling indicator and estimated energy remain heuristic; estimated daily volume is average uploaded flow multiplied by 24, not a trained demand forecast. With 12 or more ordered flow records, a separate next-record flow projection displays its chronological holdout error. This short-horizon estimate is not a distribution-network optimization.
-
-### Audit, advisory and release evidence
-
-- Export **Audit JSON** and a clearly marked **unsent notification draft** from a report. A qualified person decides whether an event is reportable and who receives it.
-- `data/water_sector_advisories.json` is a versioned **local synthetic** indicator set. Matched entries retain their source and publication date; no external feed is claimed.
-- WHO, EPA and NIST mappings identify demonstrable evidence areas. The local jurisdiction is explicitly **not evidenced** until its authority and requirements are configured. These rows never constitute certification.
-- CI runs application tests, Python compilation, Bandit, `pip-audit` and a container build. `scripts/create_release_manifest.py` records candidate artifact hashes and required human approval. It does not sign, approve or deploy to an OT environment.
-- The SQLite volume now persists by default. To intentionally erase all local records, stop the application and separately run `docker compose down --volumes` after making a backup.
-
-**Deployment boundary:** Real Zeek/Suricata sensors, an industrial DMZ, OpenSCADA integration, regulated notification, asset patching and operating optimization require authorized infrastructure, calibration, safety validation and human change control. Their presence in a design diagram does not mean they are installed by this demo.
-
-### Finding the additions on the website
-
-After restarting AquaVigil from the updated repository, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.
