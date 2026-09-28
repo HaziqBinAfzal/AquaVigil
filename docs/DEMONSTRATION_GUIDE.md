@@ -1,53 +1,49 @@
-# 15–20 minute platform demonstration
+# AquaVigil oral-exam demonstration
 
-## Start the complete stack
+**Total exam time:** 20 minutes for the presentation **and** project. Aim for roughly 9–10 minutes of slides, 8–9 minutes in AquaVigil, and 1–2 minutes of transition or questions. Rehearse the timing with your actual laptop and Docker stack.
 
-From PowerShell in the project folder:
+## Before the exam
+
+From PowerShell in the project folder, start Docker Desktop and run:
 
 ```powershell
-Copy-Item .env.example .env -ErrorAction SilentlyContinue
-docker compose pull prometheus grafana
-docker compose up --build -d
-docker compose ps
+.\START-AQUAVIGIL.cmd
 ```
 
-Open `http://localhost:8000`. Use `docker compose down` after the demonstration.
+The visible launcher shows startup stages, service addresses and logs. Open AquaVigil from the address it prints. Default addresses are app `http://localhost:8000`, Prometheus `http://localhost:9090` and Grafana `http://localhost:3000`; the launcher may choose available ports when defaults are busy. The default Compose stack consists of AquaVigil, Prometheus and Grafana. Optional MQTT/InfluxDB simulation needs the settings in the [README](../README.md#optional-local-sensor-simulation).
 
-## 0:00–2:00 — purpose and safety boundary
+Use the included synthetic files in `data/`. Prepare the app, Grafana and one report in browser tabs. Check that Grafana has readings from a completed analysis before presenting it. Synthetic or safely exported evidence must never be described as live, calibrated plant data.
 
-State the objective: protect public health while preserving secure, resilient and efficient water production. Explain that AquaVigil analyzes exported synthetic evidence and cannot control a plant.
+## Project walkthrough: 8–9 minutes
 
-## 2:00–5:00 — architecture defense
+| Time | Screen | Show and explain |
+| --- | --- | --- |
+| 0:00–1:00 | Overview / Architecture | AquaVigil is read-only. Walk upward from treatment to quality/safety, OT/SCADA, industrial DMZ and enterprise. This is a **design model**, not a deployed plant DMZ. |
+| 1:00–3:00 | Analyze Evidence | Upload `unexpected_dosing_incident.csv`. Show evidence classification, SHA-256, dosing/process observations and findings. Explain how provenance and process context support investigation. |
+| 3:00–4:00 | Water Quality | Show pH and other present sensor signals; distinguish threshold/context checks from the synthetic scikit-learn screening. A flag requests verification and does not diagnose contamination. |
+| 4:00–5:00 | AI Optimization / Asset Health | Explain fouling and energy estimates. A next-record flow projection appears only when the upload contains enough ordered flow readings. It is **not** a plant optimizer or a distribution demand forecast. |
+| 5:00–6:00 | OT/SCADA Security / Threat Center | Show the dosing finding, then upload `suricata_alerts.json` or `zeek_network_evidence.csv` for passive network-style evidence. The local advisory list is synthetic; there is no live threat feed or installed Zeek/Suricata sensor. |
+| 6:00–7:00 | Report / Compliance | Show finding evidence, safe response, audit JSON and the **unsent** notification draft. Explain that WHO/EPA/NIST mappings organize evidence but do not certify regulatory compliance. |
+| 7:00–8:00 | Monitoring / Grafana | Show application metrics and Grafana panels populated by an analysis. Point out the optional simulated MQTT/InfluxDB stream only if you actually enabled it. No dashboard reading is a certified water measurement. |
+| 8:00–9:00 | DevSecOps / Close | Show the scan or CI evidence briefly, then close with the sequence: collect → validate → correlate → explain → human review. No automated OT deployment or control command occurs. |
 
-Open **Architecture**. Explain the five trust zones from treatment upward. Emphasize the industrial DMZ, approved flows, passive visibility, independent quality verification and absence of a direct enterprise-to-controller path.
+If time is tight, keep one dosing analysis open and show the saved report and Grafana tabs. The platform has several independent sample files; one upload should not be presented as proof that every domain received relevant evidence.
 
-## 5:00–9:00 — end-to-end incident
+## Optional deeper checks
 
-Open **Analyze Evidence**, choose the supplied dosing scenario, and show:
+```powershell
+docker compose ps
+docker compose logs --tail=50 aquavigil
+```
 
-1. File provenance and SHA-256.
-2. Sensor validation across pH, conductivity, turbidity, chlorine, salinity, pressure, flow and temperature.
-3. Unexpected dosing command correlated with authorization and process change.
-4. Risk classification based on cyber and public-health consequence.
-5. Safe recommendation: contain command path, independently verify quality, restore validated configuration and preserve evidence.
+Use `docker compose down` to stop the default stack after the exam. Do not use `docker compose down --volumes` unless you intentionally want to erase persisted local analysis records.
 
-## 9:00–12:00 — AI and optimization
+## Questions to prepare for
 
-Explain that the fouling and energy indicators are transparent demonstration heuristics. They support a supervised inspection decision. They do not override engineering envelopes, water-quality limits or the operator.
-
-## 12:00–15:00 — reporting and compliance
-
-Open the HTML report. Show source hash, detection details, recommendations and WHO/EPA/NIST evidence mappings. Say clearly: “This is a demonstration mapping, not formal certification.”
-
-## 15:00–18:00 — monitoring, failure and recovery
-
-Open Prometheus and Grafana. Show analysis, risk and findings metrics. Upload an unsupported file to demonstrate safe rejection. Explain that the persistent SQLite volume survives an application restart.
-
-## Q&A defenses
-
-- **Why passive monitoring?** It provides visibility without injecting commands into fragile OT systems.
-- **Why an industrial DMZ beyond a firewall?** It provides controlled services—jump access, historian replication, patch staging and file transfer—without direct enterprise/OT sessions.
-- **Why validate sensors before ML?** A faulty or uncalibrated sensor can create a false contamination alarm and unsafe response.
-- **Why not automate containment?** Public-health and process consequences require approved procedures and qualified operator authority.
-- **What scales first?** Database, evidence storage, background processing, authentication and redundant deployment.
-- **Key trade-off?** Faster detection versus false positives; confidence comes from corroboration and independent verification.
+- **Why passive OT evidence?** It supplies investigative context without sending commands to controllers.
+- **Why a DMZ in the architecture?** It defines an approved exchange boundary; this repository does not provision one at a water plant.
+- **Why validate sensors before ML?** Calibration faults and contradictory readings can produce false alarms.
+- **Does the model confirm contamination?** No. It was trained on generated examples and needs human and laboratory verification.
+- **Is the optimization automatic?** No. Current indicators and a short-horizon estimate support supervised reasoning; engineering limits and operators retain authority.
+- **Does the app notify regulators?** No. It produces an unsent draft for qualified review.
+- **What would production use require?** Site-specific authorization, segmentation, calibrated sensors, field validation, authenticated access, secure transfer, resilience and formal change control.
