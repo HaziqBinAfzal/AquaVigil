@@ -1490,7 +1490,7 @@ See [`LICENSE`](LICENSE).
 </p>
 
 <p align="center">
-  <strong>Exam-enhanced offline demonstration</strong>
+  <strong>v1.0.0</strong>
 </p>
 
 ## Exam-enhanced demonstration additions
@@ -1531,4 +1531,4 @@ The packaged `app/models/quality-synthetic-v1.joblib` is trained with scikit-lea
 
 ### Finding the additions on the website
 
-After restarting from this updated ZIP, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.
+After restarting AquaVigil from the updated repository, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.
