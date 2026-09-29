@@ -3,7 +3,7 @@ prometheus-client==0.22.1
 pytest==9.0.3
 gunicorn==23.0.0
 bandit==1.9.2
-pip-audit==2.9.0
+pip-audit==2.10.1
 scikit-learn==1.8.0
 joblib==1.5.3
 paho-mqtt==2.1.0
