@@ -51,8 +51,10 @@ def test_restart_retains_audit_and_generates_unsent_draft(tmp_path):
 def test_new_capabilities_are_visible_in_relevant_workspaces(tmp_path):
     client = create_app({"TESTING": True, "DATABASE": str(tmp_path / "views.db")}).test_client()
     assert b"From quality screening to reviewable records" in client.get("/dashboard").data
-    assert b"Where these monitoring values come from" in client.get("/workspace/monitoring").data
-    assert b"Configured off" in client.get("/workspace/monitoring").data
+    monitoring = client.get("/workspace/monitoring").data
+    assert b"Where these monitoring values come from" not in monitoring
+    assert b"Open Prometheus" in monitoring
+    assert b"Open Grafana" in monitoring
     client.get("/demo/load/quality")
     assert b"Quality pattern screening" in client.get("/workspace/quality").data
     client.get("/demo/load/desalination")
@@ -60,3 +62,31 @@ def test_new_capabilities_are_visible_in_relevant_workspaces(tmp_path):
     client.get("/demo/load/suricata")
     assert b"Check the source behind a matching indicator" in client.get("/workspace/threats").data
     assert b"Keep the evidence; prepare a human-reviewed response" in client.get("/workspace/compliance").data
+
+
+def test_optimization_demo_screens_later_pressure_flow_records(tmp_path):
+    client = create_app({"TESTING": True, "DATABASE": str(tmp_path / "optimization.db")}).test_client()
+    response = client.get("/demo/load/desalination?view=optimization", follow_redirects=True)
+    assert response.request.path == "/workspace/optimization"
+    assert b"Isolation Forest screening" in response.data
+    assert b"Chronological holdout error" in response.data
+
+    sample = ROOT / "data" / "membrane_fouling.csv"
+    result = analyze(sample.read_bytes(), sample.name)
+    screening = result["optimization"]["pressure_flow_anomalies"]
+    assert screening["available"]
+    assert (screening["baseline_records"], screening["screened_records"]) == (18, 6)
+    assert any(row["record"] == 24 and row["score"] < 0 for row in screening["flagged_records"])
+    assert b"Isolation Forest screening" in client.get("/report/1/download").data
+    assert client.get("/report/1/audit-record").get_json()["pressure_flow_anomalies"] == screening
+    shorter = analyze(b"pressure,flow\n55,1200\nNaN,inf\n", "short.csv")
+    assert not shorter["optimization"]["pressure_flow_anomalies"]["available"]
+
+
+def test_network_evidence_has_no_process_estimates(tmp_path):
+    client = create_app({"TESTING": True, "DATABASE": str(tmp_path / "network.db")}).test_client()
+    client.get("/demo/load/suricata")
+    report = client.get("/report/1").text
+    assert "Process evidence completeness</span><b>N/A" in report
+    assert "Demo fouling indicator</th><td>N/A" in report
+    assert "aquavigil_last_sensor_confidence_percent NaN" in client.get("/metrics").text

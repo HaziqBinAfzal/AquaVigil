@@ -84,10 +84,19 @@ def test_demo_creates_analysis(tmp_path):
     assert alerts["count"] > 0
     assert alerts["alerts"][0]["reason"]
 
-    for section in ("quality", "desalination", "security", "threats", "optimization", "assets", "compliance"):
+    workspace_headings = {
+        "quality": b"Sensor readings",
+        "desalination": b"Process readings",
+        "security": b"Latest OT / SCADA protection evidence",
+        "threats": b"Alert severity",
+        "optimization": b"Resource estimates",
+        "assets": b"Membrane condition",
+        "compliance": b"Standards evidence",
+    }
+    for section, heading in workspace_headings.items():
         workspace = client.get(f"/workspace/{section}")
         assert workspace.status_code == 200
-        assert b"LIVE EVIDENCE WORKSPACE" in workspace.data or section in ("security", "threats")
+        assert heading in workspace.data
 
     security = client.get("/workspace/security").data
     threats = client.get("/workspace/threats").data

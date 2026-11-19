@@ -5,10 +5,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ["requirements.txt", "Dockerfile", "docker-compose.yml",
-         "app/services/analyzer.py", "app/models/quality-synthetic-v1.joblib",
-         "app/models/evaluation.json", "app/templates/dashboard.html",
-         "app/templates/workspace.html", "app/templates/_monitoring_new.html",
+FILES = ["requirements.txt", "Dockerfile", "docker-compose.yml", "start-aquavigil.ps1",
+         "app/services/analyzer.py", "app/services/trends.py",
+         "data/membrane_fouling.csv", "app/models/quality-synthetic-v1.joblib",
+         "app/models/evaluation.json", "app/templates/dashboard.html", "app/templates/report.html",
+         "app/templates/workspace.html",
          "app/templates/_workspace_new.html", "app/static/css/live.css"]
 
 

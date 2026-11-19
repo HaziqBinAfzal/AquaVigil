@@ -13,7 +13,7 @@
   display: grid;
   place-items: center;
   filter: drop-shadow(0 28px 30px #07557b29);
-  animation: heroDrift 6s ease-in-out infinite;
+  animation: heroDrift 5s ease-in-out infinite;
 }
 .hero-art::before {
   content: '';
@@ -28,14 +28,17 @@
 .hero-links { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 22px; padding-top: 18px; border-top: 1px solid #cfe4ee; }
 .hero-links a { font-size: 11px; font-weight: 750; color: #1d6787; text-decoration: none; }
 .hero-links a:hover { color: var(--blue); }
-@keyframes heroDrift { 50% { transform: translateY(-8px); } }
+@keyframes heroDrift {
+  0%, 100% { transform: translateY(8px); }
+  50% { transform: translateY(-20px); }
+}
 
 .endpoint { text-decoration: none; }
 .workspace-live { min-height: 210px; }
 .optimization-board { display: grid; grid-template-columns: 220px 1fr; align-items: center; gap: 30px; }
-.optimization-board dl { display: grid; grid-template-columns: minmax(140px, .6fr) 1.4fr; gap: 12px 18px; }
-.optimization-board dt { color: var(--muted); }
-.optimization-board dd { margin: 0; font-weight: 700; }
+.optimization-board dl, .resource-estimates { display: grid; grid-template-columns: minmax(140px, .6fr) 1.4fr; gap: 12px 18px; }
+.optimization-board dt, .resource-estimates dt { color: var(--muted); }
+.optimization-board dd, .resource-estimates dd { margin: 0; font-weight: 700; }
 .empty-state { text-align: center; padding: 45px 20px; }
 .empty-state p { max-width: 620px; margin: 0 auto; color: var(--muted); }
 .empty-state .actions { justify-content: center; }
@@ -49,10 +52,6 @@
   .hero h1 { font-size: 43px; }
   .hero-links { gap: 10px 16px; }
   .optimization-board { grid-template-columns: 1fr; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-art { animation: none; }
 }
 
 /* Readable product typography and operational components */
@@ -175,3 +174,10 @@ th, td { font-size: 15px; }
 .architecture-principles{padding-left:20px;color:#45677c}.architecture-principles li{margin:9px 0}.architecture-journey{margin:0 4vw 24px;padding:34px 28px;border:1px solid var(--line);border-radius:18px;background:#fff}.architecture-journey .section-heading{margin-bottom:24px}.architecture-journey .section-heading p{margin:8px auto 0;max-width:760px;color:var(--muted);font-size:16px}.architecture-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.architecture-flow article{position:relative;min-height:175px;padding:22px;border:1px solid #d6e8ef;border-radius:14px;background:linear-gradient(145deg,#fff,#effaff)}.architecture-flow article>b{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:#dff7fb;color:#087e96}.architecture-flow h3{margin:14px 0 7px}.architecture-flow p{margin:0;color:var(--muted);font-size:15px}.architecture-components{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 4vw 26px}.architecture-components article{padding:24px;border-radius:15px;background:#08243a;color:#fff;border-top:5px solid var(--cyan)}.architecture-components article:nth-child(2){border-color:var(--violet)}.architecture-components article:nth-child(3){border-color:var(--green)}.architecture-components article:nth-child(4){border-color:var(--amber)}.architecture-components span{font-size:11px;letter-spacing:.12em;color:#70dce8;font-weight:800}.architecture-components h3{margin:9px 0}.architecture-components p{margin:0;color:#bad2df;font-size:15px}
 @media(max-width:1100px){.architecture-components{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.architecture-flow,.architecture-components{grid-template-columns:1fr}.architecture-journey,.architecture-components{margin-left:22px;margin-right:22px}}
+
+.promql-card .promql-list { display:grid; gap:.45rem; }
+.promql-card .promql-row { display:grid; grid-template-columns:12rem minmax(0,1fr); align-items:center; gap:.4rem 1rem; }
+.promql-card label { color:var(--ink); font-size:.875rem; font-weight:650; }
+.promql-card .promql-expression { box-sizing:border-box; width:100%; min-width:0; padding:.65rem .85rem; border:1px solid #233e53; border-radius:8px; background:#0b2235; color:#bff1f5; font: .875rem ui-monospace,Consolas,monospace; cursor:text; }
+.promql-card .promql-expression:focus-visible { outline:2px solid #087d9b; outline-offset:2px; }
+@media(max-width:760px) { .promql-card .promql-row { grid-template-columns:1fr; } }

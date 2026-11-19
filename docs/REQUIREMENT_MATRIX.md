@@ -13,7 +13,7 @@ This maps the exam brief to **running demonstration evidence** and **work still 
 | Cyber-physical behavioral analysis | Zeek-style CSV / Suricata-style JSON adapters and cyber-process correlation | No live Zeek/Suricata deployment or continuous plant monitoring |
 | Response prioritization | Safe recommended actions, evidence preservation and an unsent notification draft | No automated containment, regulator notification or control of production |
 | Sector threat intelligence | Versioned local **synthetic** water-sector advisory matches | No trusted external threat-intelligence feed |
-| Resource optimization / energy | Specific-energy estimate and a next-record flow projection when enough ordered values exist | No constrained plant optimizer, tariff scheduling or distribution-network automation |
+| Resource optimization / energy | Specific-energy estimate, next-record Ridge flow projection, and Isolation Forest screening of later pressure/flow pairs against an earlier baseline | No constrained plant optimizer, tariff scheduling or distribution-network automation |
 | Pump / membrane maintenance | Fouling risk and supervised inspection advice | No field-validated predictive maintenance for all equipment |
 | DevSecOps | In-app scan controls, GitHub Actions tests/compilation/Bandit/pip-audit/container build and release manifest | No signed artifact, approved OT release or automated patch rollout |
 | Compliance / public health | WHO/EPA/NIST evidence mapping, Audit JSON and **unsent** notification draft | No jurisdiction-specific regulatory database, certification or submitted report |

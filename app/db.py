@@ -91,6 +91,8 @@ def _normalize_result(result):
         "how_it_worked": "AquaVigil applied documented operating limits and cyber-process correlation rules.",
         "next_action": "Review the stored evidence and follow approved operating and response procedures.",
     })
+    if not result.get("series"):
+        result["sensor_confidence"] = None
     for sensor, values in result.get("series", {}).items():
         values.setdefault("unit", {"ph": "pH units", "conductivity": "µS/cm", "turbidity": "NTU", "chlorine": "mg/L", "salinity": "ppt", "pressure": "bar", "flow": "m³/h", "temperature": "°C"}.get(sensor, "value"))
     for finding in result.get("findings", []):

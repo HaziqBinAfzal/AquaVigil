@@ -6,12 +6,39 @@
     <article><b>Evidence screened</b><strong>{{ r.ml_quality.evaluated if r.ml_quality else 0 }} records · {{ r.ml_quality.flagged if r.ml_quality else 0 }} flagged</strong><small>All six quality inputs are required for each screened record.</small><a href="{{ url_for('main.analysis',analysis_id=latest.id) }}">Examine the findings ↗</a></article>
   </div>
 </section>
-{% elif r and section in ['optimization','assets'] %}
+{% elif r and section=='optimization' %}
 <section class="new-capability" aria-label="Projection quality">
-  <div class="new-capability-heading"><span>ESTIMATE TRANSPARENCY</span><h2>Know what the resource numbers mean</h2><p>Fouling and energy are demonstration indicators. Daily volume is mean flow multiplied by 24, not a trained demand forecast.</p></div>
+  <div class="new-capability-heading"><span>ESTIMATE TRANSPARENCY</span><h2>Know what the resource numbers mean</h2><p>Specific energy is estimated from the fouling indicator. Daily volume is mean flow multiplied by 24.</p></div>
   {% if r.optimization.flow_projection and r.optimization.flow_projection.available %}
   <div class="new-capability-grid two"><article><b>Next-record flow projection</b><strong>{{ r.optimization.flow_projection.projected_next_flow_m3_h }} m³/h</strong><small>Ordered evidence series; one record ahead.</small></article><article><b>Chronological holdout error</b><strong>{{ r.optimization.flow_projection.holdout_mae_m3_h }} m³/h</strong><small>Mean absolute error across {{ r.optimization.flow_projection.holdout_records }} later records. Validate sampling intervals before use.</small></article></div>
   {% else %}<p class="new-capability-note">A projection appears after 12 or more ordered flow readings. Current indicators remain estimates.</p>{% endif %}
+</section>
+<section class="card" aria-label="Pressure and flow anomaly screening">
+  <h2>Isolation Forest screening</h2>
+  {% set screening = r.optimization.pressure_flow_anomalies %}
+  {% if screening and screening.available %}
+    <p>Compared {{ screening.screened_records }} later pressure and flow pairs with a baseline of {{ screening.baseline_records }} earlier pairs. Flagged {{ screening.flagged_count }} for review.</p>
+    {% if screening.flagged_records %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Evidence record</th><th>Pressure (bar)</th><th>Flow (m³/h)</th><th>Model score</th></tr></thead>
+        <tbody>
+        {% for item in screening.flagged_records %}
+          <tr><td>{{ item.record }}</td><td>{{ item.pressure_bar }}</td><td>{{ item.flow_m3_h }}</td><td>{{ '%.4f'|format(item.score) }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if screening.flagged_count > screening.flagged_records|length %}<p>Showing the first {{ screening.flagged_records|length }} flagged records.</p>{% endif %}
+    <p class="note">Negative scores mark unusual combinations. Check sensor calibration and operating conditions before deciding whether to inspect the membrane.</p>
+    {% endif %}
+    <p class="muted">Use time-ordered records with an earlier period representative of normal operation. The 10% setting calibrates the baseline cutoff.</p>
+  {% elif screening %}
+    <p>{{ screening.reason }}</p>
+  {% else %}
+    <p>Reanalyze this evidence to run Isolation Forest.</p>
+  {% endif %}
+  <div class="actions"><a class="btn ghost" href="{{ url_for('main.load_scenario', scenario='desalination', view='optimization') }}">Run pressure and flow demo</a></div>
 </section>
 {% elif r and section=='threats' %}
 <section class="new-capability" aria-label="Local advisory matching">

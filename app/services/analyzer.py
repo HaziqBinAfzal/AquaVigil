@@ -44,7 +44,8 @@ def _number(record, name):
             if canonical == name and record.get(alias) not in (None, ""):
                 value = record[alias]
     try:
-        return float(value)
+        number = float(value)
+        return number if math.isfinite(number) else None
     except (TypeError, ValueError):
         return None
 
@@ -211,20 +212,33 @@ def analyze(payload, filename):
 
     pressures = [_number(row, "pressure") for row in records]
     pressures = [value for value in pressures if value is not None]
-    pressure_factor = max(0, (statistics.fmean(pressures) - 55) * 1.6) if pressures else 0
-    quality_factor = sum(8 for finding in findings if finding["domain"] in ("Water quality", "Behavior analytics"))
-    fouling = min(99, round(18 + pressure_factor + quality_factor))
-    energy = round(min(6.5, 2.7 + fouling * 0.018), 2)
     flow_values = [_number(row, "flow") for row in records]
     flow_values = [value for value in flow_values if value is not None]
     daily_volume = round(statistics.fmean(flow_values) * 24) if flow_values else 0
-    from .trends import next_flow_projection
+    from .trends import next_flow_projection, screen_pressure_flow
     flow_projection = next_flow_projection(flow_values)
+    pairs = []
+    for index, row in enumerate(records, start=1):
+        pressure, flow = _number(row, "pressure"), _number(row, "flow")
+        if pressure is not None and flow is not None:
+            pairs.append((index, (pressure, flow)))
+    if len(pairs) >= 2 and all(value > 0 for _, pair in (pairs[0], pairs[-1]) for value in pair):
+        first_pressure, first_flow = pairs[0][1]
+        last_pressure, last_flow = pairs[-1][1]
+        pressure_rise = max(0, (last_pressure - first_pressure) / first_pressure)
+        flow_drop = max(0, (first_flow - last_flow) / first_flow)
+        fouling = min(100, round(100 * (pressure_rise + flow_drop))) if pressure_rise and flow_drop else 0
+        energy = round(2.7 + fouling * 0.018, 2)
+        explanation = "The demo indicator adds relative pressure rise and flow decline from the first to the last paired reading when both occur, capped at 100. The energy estimate scales with that indicator."
+    else:
+        fouling = energy = None
+        explanation = "At least two ordered pressure and flow pairs with positive starting and ending pressure and flow are required."
+    pressure_flow_anomalies = screen_pressure_flow(pairs)
     pressure_trend = round((pressures[-1] - pressures[0]) / (len(pressures)-1), 2) if len(pressures) >= 12 else None
     risk = min(100, sum(32 if finding["severity"] == "critical" else 14 for finding in findings) + min(15, invalid))
     status = "Critical" if risk >= 60 else "Attention" if risk >= 25 else "Stable"
-    expected = len(water_records) * len(LIMITS) if water_records else len(network_records) * 4
-    confidence = max(40, round(100 - (invalid / max(1, expected) * 100)))
+    expected = len(water_records) * len(LIMITS)
+    confidence = round(100 * (expected - invalid) / expected) if expected else None
     tools = ["AquaVigil validation engine", "Explainable baseline engine"]
     if network_source and network_source.startswith("Zeek"): tools.append("Zeek log adapter")
     if network_source and network_source.startswith("Suricata"): tools.append("Suricata EVE adapter")
@@ -241,9 +255,10 @@ def analyze(payload, filename):
                          "demand_forecast_m3": daily_volume, "estimated_daily_volume_m3": daily_volume,
                          "pressure_trend_per_sample_bar": pressure_trend,
                          "flow_projection": flow_projection,
-                         "recommendation": "Schedule a supervised membrane inspection and review normalized pressure/flow trends." if fouling > 55 else "Continue trend monitoring within approved engineering limits.",
+                         "pressure_flow_anomalies": pressure_flow_anomalies,
+                         "recommendation": "Schedule a supervised membrane inspection and review normalized pressure/flow trends." if fouling is not None and fouling > 55 else ("Continue trend monitoring within approved engineering limits." if fouling is not None else "Collect more paired pressure and flow readings."),
                          "authority": "Decision support only—engineering limits, laboratory evidence, and operator approval remain authoritative.",
-                         "explanation": f"Fouling risk combines the pressure factor ({pressure_factor:.1f}) with quality/anomaly evidence ({quality_factor} points); energy rises with calculated fouling risk."},
+                         "explanation": explanation},
         "incident_flow": ["Detect", "Validate", "Correlate", "Prioritize", "Respond", "Recover"],
         "compliance": [],
     }

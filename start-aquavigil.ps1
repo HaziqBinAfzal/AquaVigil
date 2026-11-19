@@ -17,14 +17,35 @@ function Read-EnvFile {
 }
 
 function Get-AvailablePort {
-    param([int]$PreferredPort, [string]$Service)
-    $candidate = $PreferredPort
-    while (Get-NetTCPConnection -LocalPort $candidate -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1) {
-        $candidate++
-        if ($candidate -gt ($PreferredPort + 50)) { throw "No available port found for $Service near $PreferredPort." }
+    param([int]$PreferredPort, [string]$Service, [int[]]$ReservedPorts)
+    if ($PreferredPort -lt 1 -or $PreferredPort -gt 65535) {
+        throw "Invalid preferred port for $Service."
     }
-    if ($candidate -ne $PreferredPort) { Write-Host "$Service port $PreferredPort is busy; using $candidate automatically." -ForegroundColor Yellow }
-    return $candidate
+    for ($port = $PreferredPort; $port -le [Math]::Min(65535, $PreferredPort + 50); $port++) {
+        if ($ReservedPorts -contains $port) { continue }
+        $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $port)
+        try {
+            $listener.ExclusiveAddressUse = $true
+            $listener.Start()
+        } catch [System.Net.Sockets.SocketException] {
+            continue
+        } finally {
+            $listener.Stop()
+        }
+        if ($port -ne $PreferredPort) {
+            Write-Host "$Service port $PreferredPort is unavailable. Using $port." -ForegroundColor Yellow
+        }
+        return $port
+    }
+    throw "No available port found for $Service near $PreferredPort."
+}
+
+function Test-DockerCommand {
+    param([string[]]$DockerArguments)
+    # PowerShell 5.1 wraps native stderr in ErrorRecords when redirected.
+    $ErrorActionPreference = "Continue"
+    & docker @DockerArguments *> $null
+    return ($LASTEXITCODE -eq 0)
 }
 
 function Set-EnvValue {
@@ -59,17 +80,16 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue) -and (Test-Path $doc
     $env:Path = "$dockerCliDir;$env:Path"
 }
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw "Docker Desktop is not installed. Install it once, then double-click OPEN-AQUAVIGIL.vbs." }
-docker info *> $null
-if ($LASTEXITCODE -ne 0) {
+if (-not (Test-DockerCommand -DockerArguments @("info"))) {
     if (-not (Test-Path $dockerDesktop)) { throw "Docker Desktop could not be found." }
     Write-Host "Starting Docker Desktop automatically..." -ForegroundColor Cyan
     Start-Process $dockerDesktop
     $dockerDeadline = (Get-Date).AddMinutes(3)
     do {
         Start-Sleep -Seconds 3
-        docker info *> $null
-    } while ($LASTEXITCODE -ne 0 -and (Get-Date) -lt $dockerDeadline)
-    if ($LASTEXITCODE -ne 0) { throw "Docker Desktop did not become ready within three minutes." }
+        $dockerReady = Test-DockerCommand -DockerArguments @("info")
+    } while (-not $dockerReady -and (Get-Date) -lt $dockerDeadline)
+    if (-not $dockerReady) { throw "Docker Desktop did not become ready within three minutes." }
 }
 
 if (-not (Test-Path ".env")) {
@@ -94,20 +114,25 @@ if ($config["MQTT_ENABLED"] -eq "1") {
     Write-Host "  Local synthetic MQTT and InfluxDB simulation enabled." -ForegroundColor Yellow
 }
 
-# Preserve the named volume and every stored analysis across restarts.
-docker compose @composeOptions down --remove-orphans *> $null
-$appPort = Get-AvailablePort $appPort "AquaVigil"
-$prometheusPort = Get-AvailablePort $prometheusPort "Prometheus"
-$grafanaPort = Get-AvailablePort $grafanaPort "Grafana"
+# Release this project's ports while retaining the named data volume.
+if (-not (Test-DockerCommand -DockerArguments (@("compose") + $composeOptions + @("down", "--remove-orphans")))) {
+    throw "Docker Compose could not stop the existing AquaVigil stack. Run docker compose ps to inspect it."
+}
+$appPort = Get-AvailablePort -PreferredPort $appPort -Service "AquaVigil"
+$prometheusPort = Get-AvailablePort -PreferredPort $prometheusPort -Service "Prometheus" -ReservedPorts @($appPort)
+$grafanaPort = Get-AvailablePort -PreferredPort $grafanaPort -Service "Grafana" -ReservedPorts @($appPort, $prometheusPort)
 Set-EnvValue ".env" "APP_PORT" $appPort
 Set-EnvValue ".env" "PROMETHEUS_PORT" $prometheusPort
 Set-EnvValue ".env" "GRAFANA_PORT" $grafanaPort
+# Compose gives process environment variables priority over .env.
+$env:APP_PORT = [string]$appPort
+$env:PROMETHEUS_PORT = [string]$prometheusPort
+$env:GRAFANA_PORT = [string]$grafanaPort
+$env:AQUAVIGIL_RESET_ON_START = "0"
 
 Stage 3 "Checking monitoring images"
-docker image inspect prom/prometheus:v3.5.0 *> $null
-if ($LASTEXITCODE -ne 0) { docker compose pull prometheus; if ($LASTEXITCODE -ne 0) { throw "Prometheus image could not be downloaded." } }
-docker image inspect grafana/grafana:12.1.1 *> $null
-if ($LASTEXITCODE -ne 0) { docker compose pull grafana; if ($LASTEXITCODE -ne 0) { throw "Grafana image could not be downloaded." } }
+if (-not (Test-DockerCommand -DockerArguments @("image", "inspect", "prom/prometheus:v3.5.0"))) { docker compose pull prometheus; if ($LASTEXITCODE -ne 0) { throw "Prometheus image could not be downloaded." } }
+if (-not (Test-DockerCommand -DockerArguments @("image", "inspect", "grafana/grafana:12.1.1"))) { docker compose pull grafana; if ($LASTEXITCODE -ne 0) { throw "Grafana image could not be downloaded." } }
 if ($composeOptions.Count -gt 0) {
     docker compose @composeOptions pull mosquitto influxdb
     if ($LASTEXITCODE -ne 0) { throw "Optional simulation images could not be downloaded." }
@@ -117,7 +142,7 @@ Stage 4 "Building application and starting services"
 docker compose @composeOptions up --build --force-recreate -d
 if ($LASTEXITCODE -ne 0) { throw "Docker Compose could not start AquaVigil." }
 
-$appUrl = "http://localhost:$appPort"
+$appUrl = "http://127.0.0.1:$appPort"
 $deadline = (Get-Date).AddMinutes(2)
 $ready = $false
 Stage 5 "Waiting for application health check"
@@ -140,8 +165,8 @@ if (-not $ready) {
 Stage 6 "Services ready"
 docker compose @composeOptions ps
 Write-Host "  APPLICATION   $appUrl" -ForegroundColor Green
-Write-Host "  PROMETHEUS    http://localhost:$prometheusPort" -ForegroundColor White
-Write-Host "  GRAFANA       http://localhost:$grafanaPort" -ForegroundColor White
+Write-Host "  PROMETHEUS    http://127.0.0.1:$prometheusPort" -ForegroundColor White
+Write-Host "  GRAFANA       http://127.0.0.1:$grafanaPort" -ForegroundColor White
 Write-Host ""
 Start-Process $appUrl
 Write-Host "  LIVE APPLICATION LOGS  |  Press Ctrl+C to stop viewing logs; services keep running." -ForegroundColor Cyan

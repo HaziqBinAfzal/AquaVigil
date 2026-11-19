@@ -2,6 +2,11 @@
 setlocal
 cd /d "%~dp0"
 title AquaVigil Docker Launcher
+if not exist "%~dp0start-aquavigil.ps1" (
+  echo Extract all ZIP files to one folder before launching AquaVigil.
+  pause
+  exit /b 1
+)
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-aquavigil.ps1"
 if errorlevel 1 (
   echo.

@@ -175,6 +175,7 @@ def download_audit_record(analysis_id):
     payload = json.dumps({"id": item["id"], "created_at_utc": item["created_at"],
                           "filename": item["filename"], "source_sha256": item["sha256"],
                           "status": item["status"], "findings": item["result"]["findings"],
+                          "pressure_flow_anomalies": item["result"].get("optimization", {}).get("pressure_flow_anomalies"),
                           "standards_evidence": item["result"].get("standards_evidence", []),
                           "advisory_matches": item["result"].get("advisory_matches", [])}, indent=2)
     return Response(payload, headers={"Content-Disposition": f"attachment; filename=audit-record-{analysis_id}.json"},
@@ -251,6 +252,8 @@ def load_scenario(scenario):
         result["workspace_roles"] = [scenario]
     analysis_id = save_analysis(path.name, digest(payload), result)
     observe(result)
+    if scenario == "desalination" and request.args.get("view") == "optimization":
+        return redirect(url_for("main.workspace", section="optimization"))
     return redirect(url_for("main.workspace", section="integrations" if scenario in ("zeek", "suricata") else "quality" if scenario == "quality" else "desalination" if scenario == "desalination" else "threats"))
 
 
