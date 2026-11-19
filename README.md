@@ -32,7 +32,7 @@
 ---
 
 > [!IMPORTANT]
-> **For the current exam demonstration, open the [v1.0.0 release](https://github.com/HaziqBinAfzal/AquaVigil/releases/tag/v1.0.0) and download `AquaVigil-v1.0.0-Updated-20260928.zip` under Assets.** You can also [download the latest `main` ZIP](https://github.com/HaziqBinAfzal/AquaVigil/archive/refs/heads/main.zip) or use the clone command below. The original `v1.0.0` Git tag still points to the older snapshot, so GitHub's automatic **Source code** ZIP and tar.gz for that tag do not include the exam updates.
+> **For the current exam demonstration, [download the latest AquaVigil ZIP from `main`](https://github.com/HaziqBinAfzal/AquaVigil/archive/refs/heads/main.zip) or clone the repository below.** Extract the entire ZIP before launching. The [v1.0.0 release](https://github.com/HaziqBinAfzal/AquaVigil/releases/tag/v1.0.0) and its September 28 asset are historical builds.
 
 ## Overview
 
@@ -68,7 +68,7 @@ It does **not** control industrial infrastructure.
 | Question | AquaVigil's answer |
 | --- | --- |
 | **Purpose** | Bring water-quality, desalination, asset, and OT evidence together so an operator can examine possible public-health and operational consequences. |
-| **Method** | Validate uploaded CSV/JSON/JSONL or optional simulated MQTT readings; retain provenance; analyze signals; correlate process and cyber evidence; explain findings in a report. |
+| **Method** | Validate uploaded CSV or JSON or optional simulated MQTT readings; retain provenance; analyze signals; correlate process and cyber evidence; explain findings in a report. |
 | **Outcome** | A traceable investigation with Prometheus/Grafana visibility, audit export, and a human decision boundary. No automated treatment or regulator action occurs. |
 
 This repository demonstrates the **analysis and monitoring** part of a proposed smart water and desalination security platform. The [requirement matrix](docs/REQUIREMENT_MATRIX.md) separates implemented evidence from the infrastructure and validation needed at a real utility.
@@ -166,7 +166,7 @@ AquaVigil is designed to help answer:
 
 | Area | Running demonstration | Deployment boundary |
 | --- | --- | --- |
-| Evidence intake | CSV, JSON and JSONL validation, classification and SHA-256 fingerprints | An approved export path would be needed for production evidence. |
+| Evidence intake | CSV and JSON validation, classification and SHA-256 fingerprints | An approved export path would be needed for production evidence. |
 | Water quality | Threshold and context checks plus a versioned **synthetic** scikit-learn screening model | Real contamination claims require calibrated instruments, laboratory verification and validation with field data. |
 | Desalination & assets | Fouling/energy indicators and a short-horizon flow projection where sufficient ordered samples exist | Plant optimization, predictive maintenance and distribution control are not deployed. |
 | OT/SCADA | Read-only analysis of Zeek-style, Suricata-style and process evidence; cyber-process correlation | No live Zeek/Suricata sensor, industrial DMZ or OpenSCADA connection is installed by this demo. |
@@ -187,7 +187,7 @@ Supported evidence enters through a controlled ingestion path before being route
 ```mermaid
 flowchart TB
 
-    SOURCE["SUPPORTED EVIDENCE<br/>CSV / JSON / JSONL"]
+    SOURCE["SUPPORTED EVIDENCE<br/>CSV / JSON"]
 
     subgraph INTAKE["INGESTION & VALIDATION"]
         direction LR
@@ -948,7 +948,10 @@ The packaged `app/models/quality-synthetic-v1.joblib` is trained with scikit-lea
 
 ### Finding the additions on the website
 
-After updating the current `main` branch and restarting, **Overview** shows three direct links to the new evidence views. **Monitoring** explains uploaded records, Prometheus, Grafana, and whether optional MQTT/InfluxDB simulation is configured. **Water Quality** shows the versioned synthetic-model screening after analyzing quality evidence. **AI Optimization** explains the estimate and shows a next-record projection when an upload contains at least 12 ordered flow readings. **Threat Center** shows matches against the local synthetic advisory set when matching Suricata evidence is analyzed. **Compliance** provides Audit JSON and an unsent notification draft after an analysis. The same downloads appear on each report. Existing uploads must be analyzed again to gain fields introduced by this version; old reports remain readable.
+- **Monitoring** opens Prometheus with 17 preloaded query panels and provides a copyable PromQL list. Grafana has a separate button. Run a scenario and allow one scrape interval for the latest-analysis metrics.
+- **AI Optimization** includes a 24-reading pressure-and-flow scenario. Isolation Forest compares six later pressure and flow pairs with 18 earlier pairs. Ridge regression projects the next flow reading and displays its holdout error.
+- **Reports** include the Isolation Forest screening results in HTML and audit JSON. Existing analyses remain readable. Reanalyze older evidence to populate the new screening fields.
+- **Uploads** accept `.csv` and `.json` filenames. The JSON adapter also handles newline-delimited records inside a `.json` file, including Suricata EVE exports.
 
 ---
 
@@ -995,7 +998,22 @@ Or use PowerShell:
 .\start-aquavigil.ps1
 ```
 
-The launcher prepares the environment, starts the Docker Compose stack, waits for AquaVigil, and opens the application.
+The launcher checks the preferred app, Prometheus, and Grafana ports, selects separate available loopback ports, and passes them to Docker Compose. It prints the actual URLs, waits for the application health check, and opens AquaVigil. Direct `docker compose up` uses the ports configured in `.env`.
+
+### Rehearse a port conflict
+
+1. With AquaVigil stopped, check the preferred app port in `.env`. The default is `8000`.
+2. If another application already occupies that port, leave it running. Otherwise, run this in a separate PowerShell window to temporarily hold the port on loopback. Substitute your configured app port if it differs.
+
+   ```powershell
+   $portProbe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 8000)
+   $portProbe.Start()
+   try { Read-Host 'Press Enter after completing the AquaVigil check' | Out-Null }
+   finally { $portProbe.Stop() }
+   ```
+
+3. Double-click `START-AQUAVIGIL.cmd` from the extracted folder. Confirm it reports a different app port, reaches **Services ready**, and opens the printed URL. From **Monitoring**, open Prometheus and Grafana and verify their URLs match those printed by the launcher.
+4. Press Enter in the PowerShell window to release the temporary listener.
 
 ---
 
@@ -1068,7 +1086,7 @@ All bundled scenarios are **synthetic** and intended for safe education, demonst
 | Frontend               | HTML / CSS / JavaScript    |
 | Persistence            | SQLite                     |
 | Analysis               | Python analytical services |
-| Evidence               | CSV / JSON / JSONL         |
+| Evidence               | CSV / JSON         |
 | Containerization       | Docker                     |
 | Orchestration          | Docker Compose             |
 | Metrics                | Prometheus                 |
